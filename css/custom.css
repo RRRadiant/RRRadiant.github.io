@@ -1,0 +1,61 @@
+:root{--bg0:#0a0a0f;--bg1:#12121a;--card:rgba(255,255,255,.03);--line:rgba(255,255,255,.06);--t1:#f0f0f5;--t2:#8a8a9a;--grad:linear-gradient(135deg,#6366f1,#a78bfa,#c084fc)}
+html,body,#body-wrap,#web_bg{background:var(--bg0)!important;color:var(--t1)!important;font-family:Inter,-apple-system,"PingFang SC",sans-serif}
+#web_bg{background-image:linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px)!important;background-size:60px 60px!important}
+#page-header,#page-header.full_page,#page-header.not-home-page,#page-header.post-bg{background:radial-gradient(ellipse at 30% 20%,rgba(99,102,241,.25),transparent 60%),radial-gradient(ellipse at 80% 60%,rgba(192,132,252,.18),transparent 60%),var(--bg0)!important;height:280px!important;min-height:0!important}
+#page-header.full_page #site-info{top:42%!important}
+#page-header::before{display:none!important}
+#site-title{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent!important;font-weight:800}
+#site-subtitle,#nav a,#nav .site-name{color:var(--t1)!important}
+#scroll-down{display:none!important}
+#nav.nav-fixed,#nav.nav-visible{background:rgba(10,10,15,.7)!important;backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line)!important}
+.recent-post-item,.card-widget,#post,#page,#archive,#tag,#category,.layout>div:first-child:not(.recent-posts){background:var(--card)!important;border:1px solid var(--line)!important;border-radius:14px!important;box-shadow:none!important;backdrop-filter:blur(8px);color:var(--t1)!important}
+.recent-post-item{transition:.25s}
+.recent-post-item:hover{border-color:rgba(167,139,250,.45)!important;box-shadow:0 0 30px rgba(99,102,241,.15)!important;transform:translateY(-2px)}
+.article-title,.recent-post-item .article-title,#post .post-content h1,#post .post-content h2,.card-widget .item-headline{color:var(--t1)!important}
+.recent-post-item .article-title:hover,.post-content a,a:hover{color:#a78bfa!important}
+.content,.article-meta-wrap,.post-meta,.card-widget,.post-content{color:var(--t2)!important}
+.post-content p,.post-content li{color:#c8c8d4!important}
+.post-content h2{border-left:3px solid #a78bfa;padding-left:10px}
+.post-content :not(pre)>code{background:rgba(99,102,241,.12)!important;color:#c4b5fd!important;font-family:"JetBrains Mono",monospace}
+.post-content blockquote{background:rgba(99,102,241,.08)!important;border-left:3px solid #6366f1!important;color:#c8c8d4!important}
+.post-content img{border-radius:8px;border:1px solid var(--line)}
+#footer{background:var(--bg1)!important}
+#footer::before{display:none!important}
+.button--animated,.card-info-social-icons a,#card-info-btn{background:var(--grad)!important;color:#fff!important}
+#nav,#nav.nav-fixed,#nav.nav-visible,#page-header #nav{background:rgba(10,10,15,.85)!important;backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line)!important}
+#page-header,#page-header.full_page,#page-header.not-home-page,#page-header.post-bg{height:200px!important;background:linear-gradient(180deg,rgba(99,102,241,.18) 0%,rgba(10,10,15,0) 100%),var(--bg0)!important}
+#page-header.full_page #site-info{top:62%!important}
+#site-title{font-size:2.2em!important}
+.layout{padding-top:24px!important}
+#page-header.full_page{height:auto!important;padding:96px 0 36px!important;display:block}
+#page-header.full_page #site-info{position:static!important;transform:none!important;top:auto!important;text-align:center;padding:0 20px}
+#page-header.full_page #site-title{display:block!important;margin:0 0 10px!important;font-size:2.6em!important;line-height:1.2}
+#page-header.full_page #site-subtitle{display:block!important;font-family:"JetBrains Mono",monospace;color:var(--t2)!important;font-size:1.05em}
+#page-header.full_page #site-subtitle::before{content:"> ";color:#a78bfa}
+.layout{max-width:1360px!important}
+.layout{width:94%!important;margin:0 auto!important}
+.layout>.recent-posts,.layout>div:first-child{width:calc(100% - 300px)!important}
+#aside-content{width:280px!important}
+@media(max-width:900px){.layout>.recent-posts,.layout>div:first-child{width:100%!important}#aside-content{width:100%!important}}
+#nav{width:100%!important;max-width:none!important;left:0!important;right:0!important}
+#pagination .pagination-related,.relatedPosts .relatedPosts-list>a,.relatedPosts>.relatedPosts-list>div{background:var(--card)!important;border:1px solid var(--line)!important;border-radius:12px}
+#pagination .pagination-related .info,.relatedPosts .content{background:transparent!important}
+#pagination .pagination-related:hover,.relatedPosts .relatedPosts-list>a:hover{border-color:rgba(167,139,250,.45)!important}
+#page-header.not-home-page,#page-header.post-bg{height:60px!important;min-height:0!important;padding:0!important;background:transparent!important}
+#page-header.not-home-page #page-site-info{display:none!important}
+#page-header.post-bg{height:auto!important;padding:84px 0 8px!important}
+#page-header.post-bg #post-info{position:static!important;transform:none!important;width:94%!important;max-width:1360px!important;margin:0 auto!important;padding:0 0 0 300px!important;text-align:left!important}
+#post-info .post-title{font-size:1.9em!important;color:var(--t1)!important;-webkit-line-clamp:unset!important}
+@media(max-width:900px){#page-header.post-bg #post-info{padding:0!important}}
+#body-wrap:not(:has(#page-header.full_page)) .layout{padding-top:28px!important}
+#post>#post-info-inline{display:block}
+/* 首页风景大图 */
+#page-header.full_page{height:100vh!important;padding:0!important;display:flex!important;align-items:center;justify-content:center;background-size:cover!important;background-position:center!important}
+#page-header.full_page{background:var(--home-bg) center/cover no-repeat!important}
+#page-header.full_page::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,15,.15) 0%,rgba(10,10,15,.35) 60%,#0a0a0f 100%);pointer-events:none}
+#page-header.full_page #site-info{position:relative!important;z-index:2}
+#page-header.full_page #site-title{background:none!important;color:#fff!important;-webkit-text-fill-color:#fff;text-shadow:0 2px 16px rgba(0,0,0,.5);font-size:3em!important}
+#page-header.full_page #site-subtitle{color:#e5e7eb!important;text-shadow:0 1px 8px rgba(0,0,0,.6)}
+#page-header.full_page #scroll-down{display:block!important;z-index:2}
+#page-header.full_page:not(.nav-fixed) #nav:not(.nav-fixed){background:transparent!important;box-shadow:none!important;backdrop-filter:none}
+:root{--home-bg:url(/img/bg1.jpg)}

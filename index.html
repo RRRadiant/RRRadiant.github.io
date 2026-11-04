@@ -1,0 +1,220 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Radiant 的知识库 - Web 安全 · CTF · 靶场复盘</title><meta name="author" content="Radiant"><meta name="copyright" content="Radiant"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta property="og:type" content="website">
+<meta property="og:title" content="Radiant 的知识库">
+<meta property="og:url" content="https://rrradiant.github.io/index.html">
+<meta property="og:site_name" content="Radiant 的知识库">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://rrradiant.github.io/img/avatar.jpg">
+<meta property="article:author" content="Radiant">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://rrradiant.github.io/img/avatar.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Radiant 的知识库",
+  "alternateName": [
+    "Web 安全 · CTF · 靶场复盘",
+    "rrradiant.github.io"
+  ],
+  "url": "https://rrradiant.github.io/"
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://rrradiant.github.io/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Radiant 的知识库',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'home'
+}</script><link rel="stylesheet" href="/css/custom.css"><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="full_page" id="page-header" style="background-image: url(/img/bg1.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">Radiant 的知识库</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="site-info"><h1 id="site-title">Radiant 的知识库</h1></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts nc" id="recent-posts"><div class="recent-post-items"><div class="recent-post-item"><div class="post_cover left"><a href="/2025/11/05/NSSCTF%EF%BC%88RCE%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF RCE 做题记录"><img class="post-bg" src="/img/covers/cover3.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="NSSCTF RCE 做题记录"></a></div><div class="recent-post-info"><a class="article-title" href="/2025/11/05/NSSCTF%EF%BC%88RCE%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF RCE 做题记录">NSSCTF RCE 做题记录</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2025-11-05T08:12:00.000Z" title="发表于 2025-11-05 16:12:00">2025-11-05</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Web/">Web</a></span></div><div class="content">[LitCTF 2023]Vim yyds通过题目我们知道这道题跟vim有关  补充：vim编辑的index.php文件，在编辑状态强制退出终端，会在同目录下产生一个.index.php.swp文件，我们可以使用vim -r .index.php.swp恢复文件 我们通过kali的dirsearch扫描出index.php.swp文件：  因此我们访问index.php.swp文件进行下载，下载成功后放到kali中执行vim -r index.php.swp命令进行恢复得到：  由此可知我们只需要POST一个password内容是Give_Me_Your_Flag的base64编码形式，并执行cmd&#x3D;cat &#x2F;flag命令即可，完整如下： 1password=R2l2ZV9NZV9Zb3VyX0ZsYWc=&amp;cmd=cat /flag   最后成功得到flag   [UUCTF 2022 新生赛]ez_rce打开环境首先分析一下代码  发现将绝大部分命令都被过滤了，但是没有过滤“\”且需要GET“code”，因此我们可以通过反引号传入命令，但是由于反引...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/2025/11/03/NSSCTF%EF%BC%88%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 反序列化做题记录"><img class="post-bg" src="/img/covers/cover7.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="NSSCTF 反序列化做题记录"></a></div><div class="recent-post-info"><a class="article-title" href="/2025/11/03/NSSCTF%EF%BC%88%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 反序列化做题记录">NSSCTF 反序列化做题记录</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2025-11-03T10:30:00.000Z" title="发表于 2025-11-03 18:30:00">2025-11-03</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Web/">Web</a></span></div><div class="content">[HUBUCTF 2022 新生赛]checkin打开环境，我们分析一下代码  通过分析我们可以知道，需要GET传参info，程序会把info反序列化成数组，再拿数组里的username和password跟原来的值比较，而且注释里说了here I changed those two，也就是真正的用户名和密码我们根本不知道。但是这里用的是**“&#x3D;&#x3D;”松散比较**，所以我们就从这里入手 补充：PHP松散比较规则 1234567==  只比较值，不比较类型，两边类型不同时会先转换再比较=== 值和类型都要相同布尔值和其他类型用 == 比较时，另一边会先被转换成布尔值：true == &quot;this_is_secret&quot;   // 非空字符串转成布尔是true，所以结果为truetrue == &quot;0&quot;                // &quot;0&quot;转成布尔是false，所以结果为falsetrue == &quot;&quot;                 // 空字符串是false，结果为false  所以只要...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/2025/10/27/NSSCTF%EF%BC%88%E6%B5%81%E9%87%8F%E5%88%86%E6%9E%90%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 流量分析做题记录"><img class="post-bg" src="/img/covers/cover6.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="NSSCTF 流量分析做题记录"></a></div><div class="recent-post-info"><a class="article-title" href="/2025/10/27/NSSCTF%EF%BC%88%E6%B5%81%E9%87%8F%E5%88%86%E6%9E%90%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 流量分析做题记录">NSSCTF 流量分析做题记录</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2025-10-27T11:50:00.000Z" title="发表于 2025-10-27 19:50:00">2025-10-27</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Misc/">Misc</a></span></div><div class="content">[陇剑杯 2021]jwt（问6）通过题目我们可以知道黑客修改了配置文件，而配置文件是在etc目录下的，所以我们可以通过过滤重点关注POST包和etc，命令为： 1http.request.method==&quot;POST&quot;&amp;&amp;http contains &quot;etc&quot;  我们可以得到以下数据包  显而易见我们找到了配置文件的绝对路径，成功找到flag   [陇剑杯 2021]jwt（问5）首先题目告诉我们黑客在服务器上编译的恶意的so文件，所以我们直接在过滤器输入： 1http contains &quot;.so&quot;  得到以下数据包  我们都知道，黑客为了入侵都会做很多尝试，最后才成功，因此我们可以先看最后一个数据包，并追踪HTTP流看看  在查找栏输入： 1.so  最后成功找到flag    [陇剑杯 2021]jwt（问4）我们首先可以通过题目可知，黑客是上传了文件，所以我们重点关注POST包，因此在过滤器中输入 1http.request.method==&quot;POST&quot;  得到一下这些数据包  ...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/2025/10/26/NSSCTF%EF%BC%88%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB+php%E4%BC%AA%E5%8D%8F%E8%AE%AE%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 文件包含与 PHP 伪协议做题记录"><img class="post-bg" src="/img/covers/cover5.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="NSSCTF 文件包含与 PHP 伪协议做题记录"></a></div><div class="recent-post-info"><a class="article-title" href="/2025/10/26/NSSCTF%EF%BC%88%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB+php%E4%BC%AA%E5%8D%8F%E8%AE%AE%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 文件包含与 PHP 伪协议做题记录">NSSCTF 文件包含与 PHP 伪协议做题记录</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2025-10-26T07:32:00.000Z" title="发表于 2025-10-26 15:32:00">2025-10-26</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Web/">Web</a></span></div><div class="content">[鹏城杯 2022]简单包含这是一道文件包含+php伪协议的题目，分析代码发现是通过post上传flag的，那我们可以先通过post尝试访问flag.php文件    通过base64解码，我们得到源代码，经过分析发现需要我们输入超过800个字符才能读取到flag.php,所以我们利用&amp;符号，进行构造  这是伪协议的payload 1a=aaaaa(省略800个a)&amp;flag=php://filter/read/convert.base64-encode/resource=/var/www/html/flag.php  最后得到  base64解码之后获得flag   [HNCTF 2022 Week1]Interesting_include分析代码我们可以知道是通过GET读取flag，且要GET“filter”，那么我们的php伪协议就可以写成 1?filter=php://fliter/read=convert.base64-encode/resource=flag.php  最后得到  最后base64解码得到flag   [SWPUCTF 2022 新生赛...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/2025/10/24/NSSCTF%EF%BC%88Upload%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 文件上传做题记录"><img class="post-bg" src="/img/covers/cover4.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="NSSCTF 文件上传做题记录"></a></div><div class="recent-post-info"><a class="article-title" href="/2025/10/24/NSSCTF%EF%BC%88Upload%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 文件上传做题记录">NSSCTF 文件上传做题记录</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2025-10-24T08:39:00.000Z" title="发表于 2025-10-24 16:39:00">2025-10-24</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/Web/">Web</a></span></div><div class="content">[NISACTF 2022]babyupload打开环境，上传php，jpg，gif等文件，发现都提示Bad filename，分析源代码发现**&#x2F;source**  因此在连接末尾加上&#x2F;source，自动下载www.zip压缩包,解压缩发现是一个python文件，打开分析后发下存在代码 123os.path.join()作用是将多个路径片段按照操作系统的规则拼接成一个完整路径字符串。它会自动使用正确的路径分隔符（如 Windows 下用 \，Linux/macOS 下用 /），避免手动拼接时出错。常用于安全、规范地组合目录和文件名这个函数有一个少有人知的特性，如果拼接的某个路径以 / 开头，那么包括基础路径在内的所有前缀路径都将被删除，该路径将视为绝对路径   所以，我们可以利用这个漏洞得到flag，接下来我们随意上传一个文件用bp抓包，将filename这一栏改为&#x2F;flag  最后我们成功得到flag   [GHCTF 2025]UPUPUP打开靶场，尝试上传php文件，显示非法文件，上传jpg文件，上传成功，所以接下来的关键就是让服务器将图片解...</div></div></div><div class="recent-post-item"><div class="post_cover right"><a href="/2025/10/19/upload-labs%E9%80%9A%E5%85%B3%E8%BF%87%E7%A8%8B/" title="upload-labs 通关过程"><img class="post-bg" src="/img/covers/cover1.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="upload-labs 通关过程"></a></div><div class="recent-post-info"><a class="article-title" href="/2025/10/19/upload-labs%E9%80%9A%E5%85%B3%E8%BF%87%E7%A8%8B/" title="upload-labs 通关过程">upload-labs 通关过程</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2025-10-19T09:25:00.000Z" title="发表于 2025-10-19 17:25:00">2025-10-19</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E9%9D%B6%E5%9C%BA/">靶场</a></span></div><div class="content">Pass-1（前端js验证） **核心原理：**仅通过前端JavaScript函数（checkFile()）校验文件后缀，未在后端做任何限制，直接修改前端代码即可绕过。首先上传一个php文件提示：   那么将php文件改为jpg格式，并用bp抓包，将jpg后缀改为php放行  放行后显示上传成功  最后用蚁剑进行连接，显示连接成功  PS：注意，地址要改为：http://127.0.0.1/upload-labs/upload/2.php  Pass-2（MIME类型验证） 核心原理：后端仅校验HTTP请求头中的Content-Type字段（MIME类型），未校验文件实际内容，修改该字段即可绕过。首先准备一句话木马php文件，上传并用bp抓包可以发现，这里会将我们的文件类型定义为application&#x2F;octet-stream（二进制数据类型）   所以我们根据源代码，将类型更改为image&#x2F;jpeg或者image&#x2F;png  可以发现文件上传成功  最后通过蚁剑成功连接  补充：MIME类型：用于标识文件格式的HTTP头字段，常见值：image/pn...</div></div></div><div class="recent-post-item"><div class="post_cover left"><a href="/2025/10/19/Sql%E6%B3%A8%E5%85%A5/" title="SQL 注入从手工到报错注入（sqli-labs）"><img class="post-bg" src="/img/covers/cover2.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="SQL 注入从手工到报错注入（sqli-labs）"></a></div><div class="recent-post-info"><a class="article-title" href="/2025/10/19/Sql%E6%B3%A8%E5%85%A5/" title="SQL 注入从手工到报错注入（sqli-labs）">SQL 注入从手工到报错注入（sqli-labs）</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">发表于</span><time datetime="2025-10-19T07:05:00.000Z" title="发表于 2025-10-19 15:05:00">2025-10-19</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E9%9D%B6%E5%9C%BA/">靶场</a></span></div><div class="content">练习靶场：米奇妙妙屋 1 如何挖掘sql注入漏洞1.1 注入可能存在的地方优先观察那种页面存在传值或者查询的地方。比如url中的GET型传参，如**?id&#x3D;1** 例如：  或者是搜索框，前端将用户输入的数据代入到数据库中进行查询，这种以POST方法进行发送数据。如下这种地方  或者是HTTP请求头部字段如Cookie值。  2 常见的参数类型和注入手法2.1 参数类型分类SQL 注入漏洞根据不同的标准，有不同的分类。如按照参数类型可分为两种：数字型和字符型。  2.1.1 数字型当输入的参数为整形时，如果存在注入漏洞，可以认为是数字型注入。 如 www.text.com/text.php?id=3 对应的sql语句为 select * from table where id&#x3D;3  2.1.2 字符型字符型注入正好相反，当输入的参数被当做字符串时，称为字符型。字符型和数字型最大的一个区别在于，数字型不需要引号来闭合，而字符串一般需要通过引号来闭合的。即看参数是否被引号包裹 例如数字型语句：select * from table where id &#x3D;3...</div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">Radiant</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">3</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2025/11/05/NSSCTF%EF%BC%88RCE%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF RCE 做题记录"><img src="/img/covers/cover3.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="NSSCTF RCE 做题记录"/></a><div class="content"><a class="title" href="/2025/11/05/NSSCTF%EF%BC%88RCE%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF RCE 做题记录">NSSCTF RCE 做题记录</a><time datetime="2025-11-05T08:12:00.000Z" title="发表于 2025-11-05 16:12:00">2025-11-05</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/11/03/NSSCTF%EF%BC%88%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 反序列化做题记录"><img src="/img/covers/cover7.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="NSSCTF 反序列化做题记录"/></a><div class="content"><a class="title" href="/2025/11/03/NSSCTF%EF%BC%88%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 反序列化做题记录">NSSCTF 反序列化做题记录</a><time datetime="2025-11-03T10:30:00.000Z" title="发表于 2025-11-03 18:30:00">2025-11-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/10/27/NSSCTF%EF%BC%88%E6%B5%81%E9%87%8F%E5%88%86%E6%9E%90%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 流量分析做题记录"><img src="/img/covers/cover6.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="NSSCTF 流量分析做题记录"/></a><div class="content"><a class="title" href="/2025/10/27/NSSCTF%EF%BC%88%E6%B5%81%E9%87%8F%E5%88%86%E6%9E%90%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 流量分析做题记录">NSSCTF 流量分析做题记录</a><time datetime="2025-10-27T11:50:00.000Z" title="发表于 2025-10-27 19:50:00">2025-10-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/10/26/NSSCTF%EF%BC%88%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB+php%E4%BC%AA%E5%8D%8F%E8%AE%AE%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 文件包含与 PHP 伪协议做题记录"><img src="/img/covers/cover5.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="NSSCTF 文件包含与 PHP 伪协议做题记录"/></a><div class="content"><a class="title" href="/2025/10/26/NSSCTF%EF%BC%88%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB+php%E4%BC%AA%E5%8D%8F%E8%AE%AE%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 文件包含与 PHP 伪协议做题记录">NSSCTF 文件包含与 PHP 伪协议做题记录</a><time datetime="2025-10-26T07:32:00.000Z" title="发表于 2025-10-26 15:32:00">2025-10-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/10/24/NSSCTF%EF%BC%88Upload%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 文件上传做题记录"><img src="/img/covers/cover4.svg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="NSSCTF 文件上传做题记录"/></a><div class="content"><a class="title" href="/2025/10/24/NSSCTF%EF%BC%88Upload%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/" title="NSSCTF 文件上传做题记录">NSSCTF 文件上传做题记录</a><time datetime="2025-10-24T08:39:00.000Z" title="发表于 2025-10-24 16:39:00">2025-10-24</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline"><i class="fas fa-folder-open"></i><span>分类</span></div>
+          <ul class="card-category-list" id="aside-cat-list">
+            <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Misc/"><span class="card-category-list-name">Misc</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/Web/"><span class="card-category-list-name">Web</span><span class="card-category-list-count">4</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E9%9D%B6%E5%9C%BA/"><span class="card-category-list-name">靶场</span><span class="card-category-list-count">2</span></a></li>
+          </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/" style="font-size: 1.1em; color: #999">反序列化</a> <a href="/tags/sqli-labs/" style="font-size: 1.1em; color: #999">sqli-labs</a> <a href="/tags/PHP%E4%BC%AA%E5%8D%8F%E8%AE%AE/" style="font-size: 1.1em; color: #999">PHP伪协议</a> <a href="/tags/%E6%B5%81%E9%87%8F%E5%88%86%E6%9E%90/" style="font-size: 1.1em; color: #999">流量分析</a> <a href="/tags/PHP/" style="font-size: 1.1em; color: #999">PHP</a> <a href="/tags/SQL%E6%B3%A8%E5%85%A5/" style="font-size: 1.1em; color: #999">SQL注入</a> <a href="/tags/RCE/" style="font-size: 1.1em; color: #999">RCE</a> <a href="/tags/Wireshark/" style="font-size: 1.1em; color: #999">Wireshark</a> <a href="/tags/NSSCTF/" style="font-size: 1.5em; color: #99a9bf">NSSCTF</a> <a href="/tags/upload-labs/" style="font-size: 1.1em; color: #999">upload-labs</a> <a href="/tags/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/" style="font-size: 1.3em; color: #99a1ac">文件上传</a> <a href="/tags/%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB/" style="font-size: 1.1em; color: #999">文件包含</a></div></div><div class="card-widget card-archives">
+    <div class="item-headline"><i class="fas fa-archive"></i><span>归档</span></div>
+  
+    <ul class="card-archive-list">
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2025/11/">
+            <span class="card-archive-list-date">
+              十一月 2025
+            </span>
+            <span class="card-archive-list-count">2</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2025/10/">
+            <span class="card-archive-list-date">
+              十月 2025
+            </span>
+            <span class="card-archive-list-count">5</span>
+          </a>
+        </li>
+      
+    </ul>
+  </div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By Radiant</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
