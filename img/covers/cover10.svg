@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#c084fc"/></linearGradient>
+<pattern id="p" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity=".05"/></pattern>
+<radialGradient id="r" cx=".85" cy=".2" r=".7"><stop offset="0" stop-color="#a78bfa" stop-opacity=".45"/><stop offset="1" stop-color="#a78bfa" stop-opacity="0"/></radialGradient></defs>
+<rect width="1200" height="630" fill="#0a0a0f"/><rect width="1200" height="630" fill="url(#r)"/><rect width="1200" height="630" fill="url(#p)"/>
+<text x="1140" y="560" text-anchor="end" font-family="JetBrains Mono,Menlo,monospace" font-size="200" font-weight="800" fill="url(#g)" fill-opacity=".22">SDL</text>
+<rect x="80" y="200" width="8" height="150" rx="4" fill="url(#g)"/>
+<text x="112" y="240" font-family="Menlo,monospace" font-size="30" fill="#a78bfa">&gt; 靶场 · Linux</text>
+<text x="112" y="330" font-family="PingFang SC,Inter,sans-serif" font-size="68" font-weight="700" fill="#f0f0f5">SDL 通关过程</text>
+<text x="112" y="520" font-family="Menlo,monospace" font-size="24" fill="#8a8a9a">Radiant 的知识库</text></svg>
