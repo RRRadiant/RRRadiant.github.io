@@ -2174,7 +2174,45 @@ body.nw-home:not(.is-past-open) .nw-nav-link:hover,
 body.nw-home:not(.is-past-open) .nw-nav-link.is-active,
 body.nw-home:not(.is-past-open) .nw-icon-link:hover {
   color: #ffffff;
-  background-color: rgba(18, 17, 15, 0.45);
+  background-color: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+/* Blend search button smoothly into the hero sky instead of a heavy dark box */
+body.nw-home:not(.is-past-open) .nw-search-trigger {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(8px);
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+}
+
+body.nw-home:not(.is-past-open) .nw-search-trigger .nw-icon {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+body.nw-home:not(.is-past-open) .nw-search-trigger .nw-kbd {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: rgba(255, 255, 255, 0.88);
+}
+
+body.nw-home:not(.is-past-open) .nw-search-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.34);
+  color: #ffffff;
+}
+
+body.nw-home:not(.is-past-open) .nw-menu-toggle {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(8px);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+body.nw-home:not(.is-past-open) .nw-menu-toggle .nw-icon {
+  color: currentColor;
 }
 
 body.nw-home.is-past-open .nw-topbar {
