@@ -5,62 +5,53 @@
     return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   };
 
-  /* 0. Homepage opening image: continuous scroll-linked mobile lockscreen swipe-up transition */
+  /* 0. Homepage opening image: full-viewport sticky stage + smooth scroll transition into main content */
   const opening = document.getElementById('nw-open');
   const mainContent = document.getElementById('main-content');
   if (opening && mainContent) {
-    let snapTimer = null;
-    let isAutoSnapping = false;
+    let mainRevealed = false;
+
+    const revealHomeMain = function () {
+      if (mainRevealed) return;
+      mainRevealed = true;
+      document.body.classList.remove('nw-reveal-pending');
+      document.body.classList.add('nw-reveal-active');
+      setTimeout(function () {
+        document.body.classList.remove('nw-reveal-active');
+      }, 720);
+    };
+
+    if (!prefersReducedMotion() && window.scrollY < window.innerHeight * 0.25 && !window.location.hash) {
+      document.body.classList.add('nw-reveal-pending');
+    } else {
+      mainRevealed = true;
+    }
 
     const syncOpenProgress = function () {
       const vh = Math.max(1, window.innerHeight || 800);
       const y = Math.max(0, window.scrollY || window.pageYOffset || 0);
       const progress = Math.min(1, Math.max(0, y / (vh * 0.85)));
-      const done = y >= vh - 60 ? 1 : 0;
 
       document.body.style.setProperty('--nw-open-progress', progress.toFixed(4));
-      document.body.style.setProperty('--nw-open-done', String(done));
-      document.body.classList.toggle('is-past-open', y >= vh * 0.68);
+      document.body.classList.toggle('is-past-open', y >= vh - 72);
+
+      if (!mainRevealed && y >= vh * 0.14) {
+        revealHomeMain();
+      }
     };
 
     syncOpenProgress();
     window.addEventListener('scroll', syncOpenProgress, { passive: true });
     window.addEventListener('resize', syncOpenProgress);
 
-    /* Magnetic lockscreen snap when the user stops scrolling part-way in the opening zone */
-    if (!prefersReducedMotion()) {
-      window.addEventListener(
-        'scroll',
-        function () {
-          if (isAutoSnapping) return;
-          if (snapTimer) clearTimeout(snapTimer);
-          const vh = Math.max(1, window.innerHeight || 800);
-          const y = window.scrollY || 0;
-          if (y <= 4 || y >= vh - 32) return;
-
-          snapTimer = setTimeout(function () {
-            const curY = window.scrollY || 0;
-            if (curY <= 4 || curY >= vh - 32) return;
-            isAutoSnapping = true;
-            const targetY = curY >= vh * 0.22 ? Math.max(0, vh - 28) : 0;
-            window.scrollTo({ top: targetY, behavior: 'smooth' });
-            setTimeout(function () {
-              isAutoSnapping = false;
-            }, 480);
-          }, 150);
-        },
-        { passive: true }
-      );
-    }
-
     const scrollBtn = document.getElementById('nw-open-scroll');
     if (scrollBtn) {
       scrollBtn.addEventListener('click', function (event) {
         event.preventDefault();
-        const vh = Math.max(1, window.innerHeight || 800);
-        window.scrollTo({
-          top: Math.max(0, vh - 28),
-          behavior: prefersReducedMotion() ? 'auto' : 'smooth'
+        revealHomeMain();
+        mainContent.scrollIntoView({
+          behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+          block: 'start'
         });
       });
     }

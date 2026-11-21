@@ -1990,8 +1990,14 @@ body.nw-is-leaving .nw-main {
 
 
 /* ============================================================
-   Homepage opening image (scroll-linked mobile lockscreen swipe-up transition)
+   Homepage opening image (full-viewport 100vh stage + scroll-linked transition)
    ============================================================ */
+/* Override overflow-x: clip on home so position: sticky works inside body */
+html:has(body.nw-home),
+body.nw-home {
+  overflow-x: visible;
+}
+
 .nw-open {
   position: relative;
   width: 100%;
@@ -2008,7 +2014,6 @@ body.nw-is-leaving .nw-main {
   z-index: 1;
 }
 
-/* Sticky lockscreen stage: stays pinned while main content slides up over it, or fades/blurs as you swipe */
 body.nw-home .nw-open {
   position: sticky;
   top: 0;
@@ -2025,8 +2030,8 @@ body.nw-home .nw-open {
   z-index: 0;
   pointer-events: none;
   will-change: transform, filter;
-  transform: scale(calc(1 + var(--nw-open-progress, 0) * 0.08)) translate3d(0, calc(var(--nw-open-progress, 0) * -28px), 0);
-  filter: blur(calc(var(--nw-open-progress, 0) * 14px)) brightness(calc(1 - var(--nw-open-progress, 0) * 0.45));
+  transform: scale(calc(1 + var(--nw-open-progress, 0) * 0.06)) translate3d(0, calc(var(--nw-open-progress, 0) * -24px), 0);
+  filter: blur(calc(var(--nw-open-progress, 0) * 12px)) brightness(calc(1 - var(--nw-open-progress, 0) * 0.45));
   animation: nw-open-photo-in var(--dur-open) var(--ease) backwards;
 }
 
@@ -2038,9 +2043,9 @@ body.nw-home .nw-open {
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(22, 21, 19, 0.22) 0%,
-    rgba(22, 21, 19, 0.28) 46%,
-    rgba(22, 21, 19, 0.72) 84%,
+    rgba(22, 21, 19, 0.24) 0%,
+    rgba(22, 21, 19, 0.22) 48%,
+    rgba(22, 21, 19, 0.72) 86%,
     var(--bg-page) 100%
   );
 }
@@ -2052,8 +2057,8 @@ body.nw-home .nw-open {
   padding: 0 24px;
   max-width: 840px;
   will-change: transform, opacity;
-  opacity: clamp(0, calc(1 - var(--nw-open-progress, 0) * 1.45), 1);
-  transform: translate3d(0, calc(var(--nw-open-progress, 0) * -72px), 0) scale(calc(1 - var(--nw-open-progress, 0) * 0.08));
+  opacity: clamp(0, calc(1 - var(--nw-open-progress, 0) * 1.6), 1);
+  transform: translate3d(0, calc(var(--nw-open-progress, 0) * -56px), 0) scale(calc(1 - var(--nw-open-progress, 0) * 0.06));
 }
 
 .nw-open-title {
@@ -2082,12 +2087,12 @@ body.nw-home .nw-open {
   z-index: 2;
   left: 50%;
   bottom: 28px;
-  transform: translate3d(-50%, calc(var(--nw-open-progress, 0) * -36px), 0);
-  opacity: clamp(0, calc(1 - var(--nw-open-progress, 0) * 2.4), 1);
+  transform: translate3d(-50%, calc(var(--nw-open-progress, 0) * -28px), 0);
+  opacity: clamp(0, calc(1 - var(--nw-open-progress, 0) * 2.5), 1);
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   color: #efe9de;
   font-size: 13px;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
@@ -2095,59 +2100,26 @@ body.nw-home .nw-open {
   transition: color var(--dur-fast) var(--ease);
 }
 
-/* Mobile lockscreen grab handle bar */
-.nw-open-scroll::after {
-  content: "";
-  width: 44px;
-  height: 4px;
-  border-radius: 4px;
-  background-color: rgba(239, 233, 222, 0.45);
-  transition: background-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
-}
-
 .nw-open-scroll:hover {
   color: var(--accent);
-}
-
-.nw-open-scroll:hover::after {
-  background-color: var(--accent);
-  transform: scaleX(1.1);
 }
 
 .nw-open-scroll .nw-icon {
   color: currentColor;
 }
 
-/* Main UI deck slides up over the sticky lockscreen image like a phone home screen sheet */
+/* Main content sheet: sits completely below 100vh at scrollY=0, then glides up over the sticky hero */
 body.nw-home .nw-main {
   position: relative;
   z-index: 10;
   max-width: none;
   width: 100%;
-  margin-top: -28px;
-  padding: 44px max(24px, calc((100% - var(--shell-max)) / 2 + 24px)) 64px;
+  margin: 0;
+  padding: 40px max(24px, calc((100% - var(--shell-max)) / 2 + 24px)) 64px;
   background-color: var(--bg-page);
-  border-top: 1px solid rgba(239, 233, 222, 0.12);
-  border-radius: calc((1 - var(--nw-open-done, 0)) * 24px) calc((1 - var(--nw-open-done, 0)) * 24px) 0 0;
-  box-shadow: 0 -24px 64px rgba(0, 0, 0, 0.68);
+  border-top: 1px solid rgba(239, 233, 222, 0.08);
+  box-shadow: 0 -20px 48px rgba(0, 0, 0, 0.55);
   scroll-margin-top: 56px;
-  transition: border-radius 260ms var(--ease);
-}
-
-/* Top pull-handle indicator inside the sliding main sheet */
-body.nw-home .nw-main::before {
-  content: "";
-  position: absolute;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40px;
-  height: 4px;
-  border-radius: 4px;
-  background-color: rgba(239, 233, 222, 0.16);
-  opacity: calc(1 - var(--nw-open-done, 0));
-  transition: opacity 220ms var(--ease);
-  pointer-events: none;
 }
 
 body.nw-home .nw-footer {
@@ -2155,17 +2127,16 @@ body.nw-home .nw-footer {
   z-index: 10;
 }
 
-/* Topbar legibility over bright sky in hero photo */
 body.nw-home .nw-topbar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   width: 100%;
-  background: linear-gradient(180deg, rgba(14, 13, 12, 0.62) 0%, rgba(14, 13, 12, 0) 100%);
+  background: linear-gradient(180deg, rgba(14, 13, 12, 0.52) 0%, rgba(14, 13, 12, 0) 100%);
   backdrop-filter: none;
   border-bottom-color: transparent;
-  transition: background-color var(--dur-medium) var(--ease), border-color var(--dur-medium) var(--ease), background var(--dur-medium) var(--ease);
+  transition: background-color var(--dur-medium) var(--ease), border-color var(--dur-medium) var(--ease);
 }
 
 body.nw-home:not(.is-past-open) .nw-brand,
@@ -2177,8 +2148,7 @@ body.nw-home:not(.is-past-open) .nw-nav-link {
 body.nw-home:not(.is-past-open) .nw-nav-link:hover,
 body.nw-home:not(.is-past-open) .nw-nav-link.is-active {
   color: #ffffff;
-  background-color: rgba(18, 17, 15, 0.55);
-  backdrop-filter: blur(8px);
+  background-color: rgba(18, 17, 15, 0.52);
 }
 
 body.nw-home.is-past-open .nw-topbar {
@@ -2188,17 +2158,51 @@ body.nw-home.is-past-open .nw-topbar {
   border-bottom-color: var(--border);
 }
 
-/* Scroll-driven spring-in for the main UI cards as the sheet slides up */
-body.nw-home .nw-shell {
-  will-change: transform, opacity;
-  opacity: clamp(0.25, calc(0.25 + var(--nw-open-progress, 0) * 0.95), 1);
-  transform: translate3d(0, calc((1 - var(--nw-open-progress, 1)) * 28px), 0) scale(calc(0.975 + var(--nw-open-progress, 1) * 0.025));
-  transform-origin: top center;
+/* Restrained unslop stagger reveal when the main content glides into view */
+body.nw-home.nw-reveal-pending .nw-hero,
+body.nw-home.nw-reveal-pending .nw-stream-bar,
+body.nw-home.nw-reveal-pending .nw-sidebar-sticky,
+body.nw-home.nw-reveal-pending .nw-post-list .nw-post-card:nth-child(-n+4) {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+}
+
+body.nw-home.nw-reveal-active .nw-hero,
+body.nw-home.nw-reveal-active .nw-stream-bar,
+body.nw-home.nw-reveal-active .nw-sidebar-sticky,
+body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(-n+4) {
+  opacity: 1;
+  transform: none;
+  transition: opacity var(--dur-enter) var(--ease), transform var(--dur-enter) var(--ease);
+}
+
+body.nw-home.nw-reveal-active .nw-sidebar-sticky {
+  transition-delay: 45ms;
+}
+
+body.nw-home.nw-reveal-active .nw-stream-bar {
+  transition-delay: 60ms;
+}
+
+body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(1) {
+  transition-delay: 90ms;
+}
+
+body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(2) {
+  transition-delay: 135ms;
+}
+
+body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(3) {
+  transition-delay: 180ms;
+}
+
+body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(4) {
+  transition-delay: 225ms;
 }
 
 @media (max-width: 860px) {
   body.nw-home .nw-main {
-    padding: 36px 16px 48px;
+    padding: 28px 16px 48px;
   }
 }
 
@@ -2222,7 +2226,10 @@ body.nw-home .nw-shell {
   body.nw-home .nw-open-photo,
   body.nw-home .nw-open-inner,
   body.nw-home .nw-open-scroll,
-  body.nw-home .nw-shell,
+  body.nw-home.nw-reveal-pending .nw-hero,
+  body.nw-home.nw-reveal-pending .nw-stream-bar,
+  body.nw-home.nw-reveal-pending .nw-sidebar-sticky,
+  body.nw-home.nw-reveal-pending .nw-post-list .nw-post-card:nth-child(-n+4),
   body.nw-is-leaving .nw-main {
     opacity: 1 !important;
     transform: none !important;
