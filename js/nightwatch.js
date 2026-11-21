@@ -1,27 +1,97 @@
 (function () {
   'use strict';
 
-  /* 0. Homepage opening image: solidify topbar after scroll */
+  const prefersReducedMotion = function () {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  };
+
+  /* 0. Homepage opening image: solidify topbar & trigger main-UI arrival transition */
   const opening = document.getElementById('nw-open');
+  const mainContent = document.getElementById('main-content');
   if (opening) {
+    let mainRevealed = false;
+    const revealHomeMain = function () {
+      if (mainRevealed) return;
+      mainRevealed = true;
+      document.body.classList.remove('nw-reveal-pending');
+      document.body.classList.add('nw-reveal-active');
+      /* Clear transition class after settle so card hover transitions remain crisp */
+      setTimeout(function () {
+        document.body.classList.remove('nw-reveal-active');
+      }, 720);
+    };
+
+    if (mainContent && !prefersReducedMotion() && window.scrollY < window.innerHeight * 0.25 && !window.location.hash) {
+      document.body.classList.add('nw-reveal-pending');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          function (entries) {
+            if (entries.some(function (entry) { return entry.isIntersecting; })) {
+              revealHomeMain();
+              io.disconnect();
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.02 }
+        );
+        io.observe(mainContent);
+      }
+    }
+
     const syncOpenState = function () {
-      const past = opening.getBoundingClientRect().bottom <= 72;
+      const rect = opening.getBoundingClientRect();
+      const past = rect.bottom <= 72;
       document.body.classList.toggle('is-past-open', past);
+      if (!mainRevealed && rect.bottom <= window.innerHeight * 0.88) {
+        revealHomeMain();
+      }
     };
     syncOpenState();
     window.addEventListener('scroll', syncOpenState, { passive: true });
     window.addEventListener('resize', syncOpenState);
 
     const scrollBtn = document.getElementById('nw-open-scroll');
-    const main = document.getElementById('main-content');
-    if (scrollBtn && main) {
+    if (scrollBtn && mainContent) {
       scrollBtn.addEventListener('click', function (event) {
         event.preventDefault();
-        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        main.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+        revealHomeMain();
+        mainContent.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
       });
     }
   }
+
+  /* 0b. Subtle same-origin page-leave transition (restored cleanly on bfcache pageshow) */
+  window.addEventListener('pageshow', function () {
+    document.body.classList.remove('nw-is-leaving');
+  });
+
+  document.addEventListener('click', function (event) {
+    if (event.defaultPrevented || prefersReducedMotion()) return;
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const link = event.target && event.target.closest ? event.target.closest('a[href]') : null;
+    if (!link) return;
+    if (link.target && link.target !== '_self') return;
+    if (link.hasAttribute('download')) return;
+
+    const rawHref = link.getAttribute('href') || '';
+    if (!rawHref || rawHref.startsWith('#') || rawHref.startsWith('mailto:') || rawHref.startsWith('tel:') || rawHref.startsWith('javascript:')) {
+      return;
+    }
+
+    let url;
+    try {
+      url = new URL(link.href, window.location.href);
+    } catch (_) {
+      return;
+    }
+    if (url.origin !== window.location.origin) return;
+    if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+
+    event.preventDefault();
+    document.body.classList.add('nw-is-leaving');
+    setTimeout(function () {
+      window.location.href = url.href;
+    }, 140);
+  });
 
   /* 1. Mobile nav drawer */
   const menuToggle = document.getElementById('nw-menu-toggle');

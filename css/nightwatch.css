@@ -31,7 +31,9 @@
 
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-fast: 150ms;
-  --dur-enter: 320ms;
+  --dur-medium: 220ms;
+  --dur-enter: 420ms;
+  --dur-open: 480ms;
 
   --topbar-h: 56px;
   --shell-max: 1320px;
@@ -293,18 +295,100 @@ input {
   max-width: var(--shell-max);
   margin: 0 auto;
   padding: 32px 24px 64px;
-  animation: nw-fade-in var(--dur-enter) var(--ease) both;
+  transition: opacity 160ms var(--ease), transform 160ms var(--ease);
 }
 
-@keyframes nw-fade-in {
+/* Inner-page enter transitions (inspired by Butterfly enter_transitions, tuned to unslop motion) */
+@keyframes nw-topbar-enter {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
+}
+
+@keyframes nw-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes nw-open-photo-in {
+  from {
+    opacity: 0.85;
+    transform: scale(1.03);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes nw-open-text-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Inner pages: topbar glides down subtly, content & footer rise from below with restrained stagger */
+body:not(.nw-home) .nw-topbar {
+  animation: nw-topbar-enter 360ms var(--ease) backwards;
+}
+
+body:not(.nw-home) .nw-article-header,
+body:not(.nw-home) .nw-page-header {
+  animation: nw-rise-in var(--dur-enter) var(--ease) backwards;
+}
+
+body:not(.nw-home) .nw-prose,
+body:not(.nw-home) .nw-archive-groups,
+body:not(.nw-home) .nw-taxonomy-grid,
+body:not(.nw-home) .nw-tag-directory {
+  animation: nw-rise-in var(--dur-enter) var(--ease) 50ms backwards;
+}
+
+body:not(.nw-home) .nw-sidebar-sticky,
+body:not(.nw-home) .nw-toc-sticky {
+  animation: nw-rise-in var(--dur-enter) var(--ease) 80ms backwards;
+}
+
+body:not(.nw-home) .nw-post-list .nw-post-card:nth-child(1) {
+  animation: nw-rise-in var(--dur-enter) var(--ease) 40ms backwards;
+}
+
+body:not(.nw-home) .nw-post-list .nw-post-card:nth-child(2) {
+  animation: nw-rise-in var(--dur-enter) var(--ease) 85ms backwards;
+}
+
+body:not(.nw-home) .nw-post-list .nw-post-card:nth-child(3) {
+  animation: nw-rise-in var(--dur-enter) var(--ease) 130ms backwards;
+}
+
+body:not(.nw-home) .nw-post-list .nw-post-card:nth-child(4) {
+  animation: nw-rise-in var(--dur-enter) var(--ease) 175ms backwards;
+}
+
+body:not(.nw-home) .nw-footer {
+  animation: nw-rise-in var(--dur-enter) var(--ease) 100ms backwards;
+}
+
+/* Gentle exit transition when navigating to another same-origin page */
+body.nw-is-leaving .nw-main {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 
 .nw-shell {
@@ -1933,6 +2017,7 @@ input {
   object-position: center;
   z-index: 0;
   pointer-events: none;
+  animation: nw-open-photo-in var(--dur-open) var(--ease) backwards;
 }
 
 .nw-open::after {
@@ -1956,6 +2041,7 @@ input {
   text-align: center;
   padding: 0 24px;
   max-width: 840px;
+  transition: opacity 260ms var(--ease), transform 260ms var(--ease);
 }
 
 .nw-open-title {
@@ -1966,6 +2052,7 @@ input {
   letter-spacing: 0.01em;
   color: #ffffff;
   text-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+  animation: nw-open-text-in var(--dur-enter) var(--ease) backwards;
 }
 
 .nw-open-subtitle {
@@ -1975,6 +2062,7 @@ input {
   line-height: 1.5;
   color: #e5e7eb;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+  animation: nw-open-text-in var(--dur-enter) var(--ease) 60ms backwards;
 }
 
 .nw-open-scroll {
@@ -1990,10 +2078,25 @@ input {
   color: #efe9de;
   font-size: 13px;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+  animation: nw-rise-in var(--dur-enter) var(--ease) 120ms backwards;
+  transition: opacity 220ms var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.nw-open-scroll:hover {
+  color: var(--accent);
 }
 
 .nw-open-scroll .nw-icon {
-  color: #efe9de;
+  color: currentColor;
+}
+
+body.nw-home.is-past-open .nw-open-inner {
+  opacity: 0.35;
+  transform: translateY(-10px);
+}
+
+body.nw-home.is-past-open .nw-open-scroll {
+  opacity: 0;
 }
 
 body.nw-home .nw-topbar {
@@ -2005,6 +2108,7 @@ body.nw-home .nw-topbar {
   background-color: transparent;
   backdrop-filter: none;
   border-bottom-color: transparent;
+  transition: background-color var(--dur-medium) var(--ease), border-color var(--dur-medium) var(--ease);
 }
 
 body.nw-home.is-past-open .nw-topbar {
@@ -2017,16 +2121,67 @@ body.nw-home .nw-main {
   scroll-margin-top: 80px;
 }
 
+/* Homepage main-UI arrival transition when scrolling down from #nw-open */
+body.nw-home.nw-reveal-pending .nw-hero,
+body.nw-home.nw-reveal-pending .nw-stream-bar,
+body.nw-home.nw-reveal-pending .nw-sidebar-sticky,
+body.nw-home.nw-reveal-pending .nw-post-list .nw-post-card:nth-child(-n+4) {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+body.nw-home.nw-reveal-active .nw-hero,
+body.nw-home.nw-reveal-active .nw-stream-bar,
+body.nw-home.nw-reveal-active .nw-sidebar-sticky,
+body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(-n+4) {
+  opacity: 1;
+  transform: none;
+  transition: opacity var(--dur-enter) var(--ease), transform var(--dur-enter) var(--ease);
+}
+
+body.nw-home.nw-reveal-active .nw-sidebar-sticky {
+  transition-delay: 50ms;
+}
+
+body.nw-home.nw-reveal-active .nw-stream-bar {
+  transition-delay: 60ms;
+}
+
+body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(1) {
+  transition-delay: 90ms;
+}
+
+body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(2) {
+  transition-delay: 135ms;
+}
+
+body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(3) {
+  transition-delay: 180ms;
+}
+
+body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(4) {
+  transition-delay: 225ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 
-  .nw-main {
-    animation: none;
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
   }
 
-  * {
-    transition-duration: 0.01ms !important;
+  body.nw-home.nw-reveal-pending .nw-hero,
+  body.nw-home.nw-reveal-pending .nw-stream-bar,
+  body.nw-home.nw-reveal-pending .nw-sidebar-sticky,
+  body.nw-home.nw-reveal-pending .nw-post-list .nw-post-card:nth-child(-n+4),
+  body.nw-is-leaving .nw-main {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
