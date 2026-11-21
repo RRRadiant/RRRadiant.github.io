@@ -1990,7 +1990,7 @@ body.nw-is-leaving .nw-main {
 
 
 /* ============================================================
-   Homepage opening image (original /img/bg1.jpg, then main UI)
+   Homepage opening image (lockscreen swipe-up transition to main UI)
    ============================================================ */
 .nw-open {
   position: relative;
@@ -2041,7 +2041,7 @@ body.nw-is-leaving .nw-main {
   text-align: center;
   padding: 0 24px;
   max-width: 840px;
-  transition: opacity 260ms var(--ease), transform 260ms var(--ease);
+  transition: opacity 280ms var(--ease), transform 280ms var(--ease);
 }
 
 .nw-open-title {
@@ -2069,25 +2069,82 @@ body.nw-is-leaving .nw-main {
   position: absolute;
   z-index: 2;
   left: 50%;
-  bottom: 28px;
+  bottom: 24px;
   transform: translateX(-50%);
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   color: #efe9de;
   font-size: 13px;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
   animation: nw-rise-in var(--dur-enter) var(--ease) 120ms backwards;
-  transition: opacity 220ms var(--ease), color var(--dur-fast) var(--ease);
+  transition: opacity 220ms var(--ease), color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+
+/* Mobile lockscreen grab handle indicator at the bottom of the cover */
+.nw-open-scroll::after {
+  content: "";
+  width: 44px;
+  height: 4px;
+  border-radius: 4px;
+  background-color: rgba(239, 233, 222, 0.42);
+  transition: background-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 
 .nw-open-scroll:hover {
   color: var(--accent);
 }
 
+.nw-open-scroll:hover::after {
+  background-color: var(--accent);
+  transform: scaleX(1.08);
+}
+
 .nw-open-scroll .nw-icon {
   color: currentColor;
+}
+
+/* Active lockscreen curtain mode (fixed full-viewport cover sliding up over main UI) */
+body.nw-home.nw-lockscreen-ready .nw-open {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  height: 100vh;
+  height: 100dvh;
+  border-bottom: 1px solid rgba(239, 233, 222, 0.12);
+  will-change: transform, opacity;
+  transform: translate3d(0, var(--nw-unlock-y, 0px), 0);
+  transition: transform 500ms var(--ease), opacity 420ms var(--ease);
+}
+
+body.nw-home.nw-lockscreen-ready.is-dragging-open .nw-open {
+  transition: none;
+}
+
+body.nw-home.nw-lockscreen-ready:not(.is-unlocked) {
+  overflow: hidden;
+  touch-action: none;
+}
+
+body.nw-home.nw-lockscreen-ready .nw-main {
+  padding-top: calc(var(--topbar-h) + 32px);
+}
+
+/* Lockscreen slid up & unlocked */
+body.nw-home.nw-lockscreen-ready.is-unlocked .nw-open {
+  transform: translate3d(0, -104%, 0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.nw-home.nw-lockscreen-ready.is-unlocked .nw-open-inner {
+  opacity: 0;
+  transform: translate3d(0, -28px, 0) scale(0.97);
+}
+
+body.nw-home.nw-lockscreen-ready.is-unlocked .nw-open-scroll {
+  opacity: 0;
 }
 
 body.nw-home.is-past-open .nw-open-inner {
@@ -2111,7 +2168,8 @@ body.nw-home .nw-topbar {
   transition: background-color var(--dur-medium) var(--ease), border-color var(--dur-medium) var(--ease);
 }
 
-body.nw-home.is-past-open .nw-topbar {
+body.nw-home.is-past-open .nw-topbar,
+body.nw-home.is-unlocked .nw-topbar {
   background-color: rgba(18, 17, 15, 0.92);
   backdrop-filter: blur(10px);
   border-bottom-color: var(--border);
@@ -2121,13 +2179,13 @@ body.nw-home .nw-main {
   scroll-margin-top: 80px;
 }
 
-/* Homepage main-UI arrival transition when scrolling down from #nw-open */
+/* Homepage main-UI arrival transition (lockscreen spring-in from scaled depth) */
 body.nw-home.nw-reveal-pending .nw-hero,
 body.nw-home.nw-reveal-pending .nw-stream-bar,
 body.nw-home.nw-reveal-pending .nw-sidebar-sticky,
 body.nw-home.nw-reveal-pending .nw-post-list .nw-post-card:nth-child(-n+4) {
   opacity: 0;
-  transform: translateY(14px);
+  transform: translate3d(0, 16px, 0) scale(0.98);
 }
 
 body.nw-home.nw-reveal-active .nw-hero,
@@ -2136,11 +2194,11 @@ body.nw-home.nw-reveal-active .nw-sidebar-sticky,
 body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(-n+4) {
   opacity: 1;
   transform: none;
-  transition: opacity var(--dur-enter) var(--ease), transform var(--dur-enter) var(--ease);
+  transition: opacity 460ms var(--ease), transform 460ms var(--ease);
 }
 
 body.nw-home.nw-reveal-active .nw-sidebar-sticky {
-  transition-delay: 50ms;
+  transition-delay: 45ms;
 }
 
 body.nw-home.nw-reveal-active .nw-stream-bar {
@@ -2161,6 +2219,12 @@ body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(3) {
 
 body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(4) {
   transition-delay: 225ms;
+}
+
+@media (max-width: 860px) {
+  body.nw-home.nw-lockscreen-ready .nw-main {
+    padding-top: calc(var(--topbar-h) + 20px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

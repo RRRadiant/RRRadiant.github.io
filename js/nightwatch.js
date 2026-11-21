@@ -5,57 +5,193 @@
     return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   };
 
-  /* 0. Homepage opening image: solidify topbar & trigger main-UI arrival transition */
+  /* 0. Homepage opening image: mobile-style swipe-up unlock curtain & main-UI arrival transition */
   const opening = document.getElementById('nw-open');
   const mainContent = document.getElementById('main-content');
-  if (opening) {
-    let mainRevealed = false;
-    const revealHomeMain = function () {
-      if (mainRevealed) return;
-      mainRevealed = true;
+  if (opening && mainContent) {
+    let isUnlocked = false;
+    let isAnimating = false;
+    let revealTimer = null;
+    let animTimer = null;
+    let dragStartY = null;
+    let dragDeltaY = 0;
+
+    const triggerMainReveal = function () {
+      if (revealTimer) clearTimeout(revealTimer);
       document.body.classList.remove('nw-reveal-pending');
       document.body.classList.add('nw-reveal-active');
       /* Clear transition class after settle so card hover transitions remain crisp */
-      setTimeout(function () {
+      revealTimer = setTimeout(function () {
         document.body.classList.remove('nw-reveal-active');
       }, 720);
     };
 
-    if (mainContent && !prefersReducedMotion() && window.scrollY < window.innerHeight * 0.25 && !window.location.hash) {
-      document.body.classList.add('nw-reveal-pending');
-      if ('IntersectionObserver' in window) {
-        const io = new IntersectionObserver(
-          function (entries) {
-            if (entries.some(function (entry) { return entry.isIntersecting; })) {
-              revealHomeMain();
-              io.disconnect();
-            }
-          },
-          { rootMargin: '0px 0px -8% 0px', threshold: 0.02 }
-        );
-        io.observe(mainContent);
-      }
-    }
-
-    const syncOpenState = function () {
-      const rect = opening.getBoundingClientRect();
-      const past = rect.bottom <= 72;
-      document.body.classList.toggle('is-past-open', past);
-      if (!mainRevealed && rect.bottom <= window.innerHeight * 0.88) {
-        revealHomeMain();
-      }
+    const unlockOpen = function () {
+      if (isUnlocked || isAnimating) return;
+      isUnlocked = true;
+      isAnimating = true;
+      document.body.classList.remove('is-dragging-open');
+      document.body.style.removeProperty('--nw-unlock-y');
+      document.body.classList.add('is-unlocked', 'is-past-open');
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      triggerMainReveal();
+      if (animTimer) clearTimeout(animTimer);
+      animTimer = setTimeout(function () {
+        isAnimating = false;
+      }, 520);
     };
-    syncOpenState();
-    window.addEventListener('scroll', syncOpenState, { passive: true });
-    window.addEventListener('resize', syncOpenState);
 
-    const scrollBtn = document.getElementById('nw-open-scroll');
-    if (scrollBtn && mainContent) {
-      scrollBtn.addEventListener('click', function (event) {
-        event.preventDefault();
-        revealHomeMain();
-        mainContent.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+    const lockOpen = function () {
+      if (!isUnlocked || isAnimating) return;
+      isUnlocked = false;
+      isAnimating = true;
+      if (revealTimer) clearTimeout(revealTimer);
+      document.body.classList.remove('is-dragging-open', 'is-unlocked', 'is-past-open', 'nw-reveal-active');
+      document.body.classList.add('nw-reveal-pending');
+      document.body.style.removeProperty('--nw-unlock-y');
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      if (animTimer) clearTimeout(animTimer);
+      animTimer = setTimeout(function () {
+        isAnimating = false;
+      }, 520);
+    };
+
+    if (!prefersReducedMotion()) {
+      document.body.classList.add('nw-lockscreen-ready');
+
+      if (window.location.hash || window.scrollY > 36) {
+        isUnlocked = true;
+        document.body.classList.add('is-unlocked', 'is-past-open');
+      } else {
+        document.body.classList.add('nw-reveal-pending');
+      }
+
+      /* Wheel: scroll down on lockscreen slides cover up; scroll up at top pulls cover back down */
+      window.addEventListener(
+        'wheel',
+        function (event) {
+          if (isAnimating) {
+            event.preventDefault();
+            return;
+          }
+          if (!isUnlocked) {
+            if (event.deltaY > 8) {
+              event.preventDefault();
+              unlockOpen();
+            }
+          } else if (window.scrollY <= 2 && event.deltaY < -28) {
+            event.preventDefault();
+            lockOpen();
+          }
+        },
+        { passive: false }
+      );
+
+      /* Touch: interactive 1:1 upward drag on the lockscreen cover, and downward pull at top to relock */
+      let pullDownStartY = null;
+      let pullDownDeltaY = 0;
+
+      opening.addEventListener(
+        'touchstart',
+        function (event) {
+          if (isUnlocked || isAnimating || event.touches.length !== 1) return;
+          dragStartY = event.touches[0].clientY;
+          dragDeltaY = 0;
+          document.body.classList.add('is-dragging-open');
+        },
+        { passive: true }
+      );
+
+      opening.addEventListener(
+        'touchmove',
+        function (event) {
+          if (dragStartY === null || isUnlocked) return;
+          const currentY = event.touches[0].clientY;
+          dragDeltaY = currentY - dragStartY;
+          if (dragDeltaY < 0) {
+            event.preventDefault();
+            document.body.style.setProperty('--nw-unlock-y', Math.round(dragDeltaY) + 'px');
+          } else {
+            document.body.style.setProperty('--nw-unlock-y', '0px');
+          }
+        },
+        { passive: false }
+      );
+
+      const finishTouchDrag = function () {
+        if (dragStartY === null) return;
+        const delta = dragDeltaY;
+        dragStartY = null;
+        dragDeltaY = 0;
+        document.body.classList.remove('is-dragging-open');
+        if (delta < -56) {
+          unlockOpen();
+        } else {
+          document.body.style.removeProperty('--nw-unlock-y');
+        }
+      };
+
+      opening.addEventListener('touchend', finishTouchDrag, { passive: true });
+      opening.addEventListener('touchcancel', finishTouchDrag, { passive: true });
+
+      window.addEventListener(
+        'touchstart',
+        function (event) {
+          if (!isUnlocked || isAnimating || window.scrollY > 2 || event.touches.length !== 1) {
+            pullDownStartY = null;
+            return;
+          }
+          pullDownStartY = event.touches[0].clientY;
+          pullDownDeltaY = 0;
+        },
+        { passive: true }
+      );
+
+      window.addEventListener(
+        'touchmove',
+        function (event) {
+          if (pullDownStartY === null || !isUnlocked) return;
+          if (window.scrollY > 2) {
+            pullDownStartY = null;
+            return;
+          }
+          pullDownDeltaY = event.touches[0].clientY - pullDownStartY;
+        },
+        { passive: true }
+      );
+
+      window.addEventListener(
+        'touchend',
+        function () {
+          if (pullDownStartY === null) return;
+          const delta = pullDownDeltaY;
+          pullDownStartY = null;
+          pullDownDeltaY = 0;
+          if (delta > 72 && window.scrollY <= 2) {
+            lockOpen();
+          }
+        },
+        { passive: true }
+      );
+
+      /* Keyboard: Space / Down / PageDown unlocks the cover screen */
+      window.addEventListener('keydown', function (event) {
+        if (isUnlocked || isAnimating) return;
+        const tag = event.target && event.target.tagName ? event.target.tagName.toLowerCase() : '';
+        if (tag === 'input' || tag === 'textarea' || (event.target && event.target.isContentEditable)) return;
+        if (event.key === 'ArrowDown' || event.key === 'PageDown' || event.key === ' ') {
+          event.preventDefault();
+          unlockOpen();
+        }
       });
+
+      const scrollBtn = document.getElementById('nw-open-scroll');
+      if (scrollBtn) {
+        scrollBtn.addEventListener('click', function (event) {
+          event.preventDefault();
+          unlockOpen();
+        });
+      }
     }
   }
 
