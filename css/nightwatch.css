@@ -1990,14 +1990,8 @@ body.nw-is-leaving .nw-main {
 
 
 /* ============================================================
-   Homepage opening image (full-viewport 100vh stage + scroll-linked transition)
+   Homepage opening image (clean full-viewport cover + lockscreen slide-up transition)
    ============================================================ */
-/* Override overflow-x: clip on home so position: sticky works inside body */
-html:has(body.nw-home),
-body.nw-home {
-  overflow-x: visible;
-}
-
 .nw-open {
   position: relative;
   width: 100%;
@@ -2011,12 +2005,6 @@ body.nw-home {
   background-color: var(--bg-page);
   overflow: hidden;
   isolation: isolate;
-  z-index: 1;
-}
-
-body.nw-home .nw-open {
-  position: sticky;
-  top: 0;
 }
 
 .nw-open-photo {
@@ -2029,9 +2017,6 @@ body.nw-home .nw-open {
   object-position: center;
   z-index: 0;
   pointer-events: none;
-  will-change: transform, filter;
-  transform: scale(calc(1 + var(--nw-open-progress, 0) * 0.06)) translate3d(0, calc(var(--nw-open-progress, 0) * -24px), 0);
-  filter: blur(calc(var(--nw-open-progress, 0) * 12px)) brightness(calc(1 - var(--nw-open-progress, 0) * 0.45));
   animation: nw-open-photo-in var(--dur-open) var(--ease) backwards;
 }
 
@@ -2043,8 +2028,8 @@ body.nw-home .nw-open {
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(22, 21, 19, 0.24) 0%,
-    rgba(22, 21, 19, 0.22) 48%,
+    rgba(22, 21, 19, 0.14) 0%,
+    rgba(22, 21, 19, 0.24) 48%,
     rgba(22, 21, 19, 0.72) 86%,
     var(--bg-page) 100%
   );
@@ -2056,9 +2041,7 @@ body.nw-home .nw-open {
   text-align: center;
   padding: 0 24px;
   max-width: 840px;
-  will-change: transform, opacity;
-  opacity: clamp(0, calc(1 - var(--nw-open-progress, 0) * 1.6), 1);
-  transform: translate3d(0, calc(var(--nw-open-progress, 0) * -56px), 0) scale(calc(1 - var(--nw-open-progress, 0) * 0.06));
+  transition: opacity 420ms var(--ease), transform 420ms var(--ease);
 }
 
 .nw-open-title {
@@ -2087,8 +2070,7 @@ body.nw-home .nw-open {
   z-index: 2;
   left: 50%;
   bottom: 28px;
-  transform: translate3d(-50%, calc(var(--nw-open-progress, 0) * -28px), 0);
-  opacity: clamp(0, calc(1 - var(--nw-open-progress, 0) * 2.5), 1);
+  transform: translateX(-50%);
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -2097,7 +2079,7 @@ body.nw-home .nw-open {
   font-size: 13px;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
   animation: nw-rise-in var(--dur-enter) var(--ease) 120ms backwards;
-  transition: color var(--dur-fast) var(--ease);
+  transition: opacity 280ms var(--ease), transform 280ms var(--ease), color var(--dur-fast) var(--ease);
 }
 
 .nw-open-scroll:hover {
@@ -2108,63 +2090,124 @@ body.nw-home .nw-open {
   color: currentColor;
 }
 
-/* Main content sheet: sits completely below 100vh at scrollY=0, then glides up over the sticky hero */
-body.nw-home .nw-main {
-  position: relative;
-  z-index: 10;
-  max-width: none;
-  width: 100%;
-  margin: 0;
-  padding: 40px max(24px, calc((100% - var(--shell-max)) / 2 + 24px)) 64px;
-  background-color: var(--bg-page);
-  border-top: 1px solid rgba(239, 233, 222, 0.08);
-  box-shadow: 0 -20px 48px rgba(0, 0, 0, 0.55);
-  scroll-margin-top: 56px;
+/* Lockscreen curtain mode: cover stays pinned above main UI and slides cleanly up off-screen on unlock */
+body.nw-home.nw-curtain-mode .nw-open {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  height: 100vh;
+  height: 100dvh;
+  transform: translate3d(0, var(--nw-curtain-y, 0px), 0);
+  opacity: var(--nw-curtain-opacity, 1);
+  transition:
+    transform 680ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 540ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
 }
 
-body.nw-home .nw-footer {
-  position: relative;
-  z-index: 10;
+body.nw-home.nw-curtain-mode .nw-open .nw-open-photo {
+  transition: transform 680ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
 }
 
+body.nw-home.nw-curtain-mode.is-dragging-open .nw-open {
+  transition: none;
+}
+
+html:has(body.nw-home.nw-curtain-mode:not(.is-unlocked)),
+body.nw-home.nw-curtain-mode:not(.is-unlocked) {
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* Unlocked state: cover sweeps smoothly upward out of viewport like iOS/Android lockscreen */
+body.nw-home.nw-curtain-mode.is-unlocked .nw-open {
+  transform: translate3d(0, -100%, 0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.nw-home.nw-curtain-mode.is-unlocked .nw-open .nw-open-photo {
+  transform: scale(1.06);
+}
+
+body.nw-home.nw-curtain-mode.is-unlocked .nw-open-inner {
+  opacity: 0;
+  transform: translate3d(0, -32px, 0) scale(0.97);
+}
+
+body.nw-home.nw-curtain-mode.is-unlocked .nw-open-scroll {
+  opacity: 0;
+  transform: translate3d(-50%, -16px, 0);
+}
+
+/* Main content sits directly below the topbar when curtain mode is active */
+body.nw-home.nw-curtain-mode .nw-main {
+  padding-top: calc(var(--topbar-h) + 32px);
+}
+
+/* Topbar stays clean and completely transparent over the cover (no dark bar / black line) */
 body.nw-home .nw-topbar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   width: 100%;
-  background: linear-gradient(180deg, rgba(14, 13, 12, 0.52) 0%, rgba(14, 13, 12, 0) 100%);
+  background: transparent;
+  background-color: transparent;
   backdrop-filter: none;
   border-bottom-color: transparent;
-  transition: background-color var(--dur-medium) var(--ease), border-color var(--dur-medium) var(--ease);
+  transition:
+    background-color 360ms var(--ease),
+    border-color 360ms var(--ease);
 }
 
 body.nw-home:not(.is-past-open) .nw-brand,
-body.nw-home:not(.is-past-open) .nw-nav-link {
+body.nw-home:not(.is-past-open) .nw-nav-link,
+body.nw-home:not(.is-past-open) .nw-icon-link,
+body.nw-home:not(.is-past-open) .nw-icon-link .nw-icon {
   color: rgba(255, 255, 255, 0.92);
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.48);
 }
 
 body.nw-home:not(.is-past-open) .nw-nav-link:hover,
-body.nw-home:not(.is-past-open) .nw-nav-link.is-active {
+body.nw-home:not(.is-past-open) .nw-nav-link.is-active,
+body.nw-home:not(.is-past-open) .nw-icon-link:hover {
   color: #ffffff;
-  background-color: rgba(18, 17, 15, 0.52);
+  background-color: rgba(18, 17, 15, 0.45);
 }
 
 body.nw-home.is-past-open .nw-topbar {
-  background: rgba(18, 17, 15, 0.92);
   background-color: rgba(18, 17, 15, 0.92);
   backdrop-filter: blur(10px);
   border-bottom-color: var(--border);
 }
 
-/* Restrained unslop stagger reveal when the main content glides into view */
+body.nw-home .nw-main {
+  scroll-margin-top: 80px;
+}
+
+/* Main UI rises smoothly into focus as the cover sweeps up */
+body.nw-home.nw-curtain-mode:not(.is-unlocked) .nw-shell {
+  opacity: 0;
+  transform: translate3d(0, 36px, 0) scale(0.98);
+}
+
+body.nw-home.nw-curtain-mode.is-unlocked .nw-shell {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 540ms cubic-bezier(0.22, 1, 0.36, 1) 120ms,
+    transform 620ms cubic-bezier(0.22, 1, 0.36, 1) 100ms;
+}
+
+/* Staggered card entrance after unlock */
 body.nw-home.nw-reveal-pending .nw-hero,
 body.nw-home.nw-reveal-pending .nw-stream-bar,
 body.nw-home.nw-reveal-pending .nw-sidebar-sticky,
 body.nw-home.nw-reveal-pending .nw-post-list .nw-post-card:nth-child(-n+4) {
   opacity: 0;
-  transform: translate3d(0, 14px, 0);
+  transform: translate3d(0, 18px, 0);
 }
 
 body.nw-home.nw-reveal-active .nw-hero,
@@ -2173,36 +2216,40 @@ body.nw-home.nw-reveal-active .nw-sidebar-sticky,
 body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(-n+4) {
   opacity: 1;
   transform: none;
-  transition: opacity var(--dur-enter) var(--ease), transform var(--dur-enter) var(--ease);
+  transition: opacity 480ms var(--ease), transform 520ms var(--ease);
 }
 
 body.nw-home.nw-reveal-active .nw-sidebar-sticky {
-  transition-delay: 45ms;
+  transition-delay: 140ms;
+}
+
+body.nw-home.nw-reveal-active .nw-hero {
+  transition-delay: 120ms;
 }
 
 body.nw-home.nw-reveal-active .nw-stream-bar {
-  transition-delay: 60ms;
-}
-
-body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(1) {
-  transition-delay: 90ms;
-}
-
-body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(2) {
-  transition-delay: 135ms;
-}
-
-body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(3) {
   transition-delay: 180ms;
 }
 
+body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(1) {
+  transition-delay: 210ms;
+}
+
+body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(2) {
+  transition-delay: 260ms;
+}
+
+body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(3) {
+  transition-delay: 310ms;
+}
+
 body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(4) {
-  transition-delay: 225ms;
+  transition-delay: 360ms;
 }
 
 @media (max-width: 860px) {
-  body.nw-home .nw-main {
-    padding: 28px 16px 48px;
+  body.nw-home.nw-curtain-mode .nw-main {
+    padding-top: calc(var(--topbar-h) + 20px);
   }
 }
 
@@ -2211,28 +2258,27 @@ body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(4) {
     scroll-behavior: auto;
   }
 
-  *,
-  *::before,
-  *::after {
-    animation: none !important;
-    transition-duration: 0.01ms !important;
-    transition-delay: 0ms !important;
+  /* Keep the explicit homepage cover-to-content curtain transition active even when Windows disables OS animation effects */
+  body.nw-home.nw-curtain-mode .nw-open {
+    transition:
+      transform 620ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 480ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  body.nw-home .nw-open {
-    position: relative;
+  body.nw-home.nw-curtain-mode .nw-open .nw-open-photo {
+    transition: transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  body.nw-home .nw-open-photo,
-  body.nw-home .nw-open-inner,
-  body.nw-home .nw-open-scroll,
-  body.nw-home.nw-reveal-pending .nw-hero,
-  body.nw-home.nw-reveal-pending .nw-stream-bar,
-  body.nw-home.nw-reveal-pending .nw-sidebar-sticky,
-  body.nw-home.nw-reveal-pending .nw-post-list .nw-post-card:nth-child(-n+4),
-  body.nw-is-leaving .nw-main {
-    opacity: 1 !important;
-    transform: none !important;
-    filter: none !important;
+  body.nw-home.nw-curtain-mode.is-unlocked .nw-shell {
+    transition:
+      opacity 500ms cubic-bezier(0.22, 1, 0.36, 1) 100ms,
+      transform 560ms cubic-bezier(0.22, 1, 0.36, 1) 80ms;
+  }
+
+  body.nw-home.nw-reveal-active .nw-hero,
+  body.nw-home.nw-reveal-active .nw-stream-bar,
+  body.nw-home.nw-reveal-active .nw-sidebar-sticky,
+  body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(-n+4) {
+    transition: opacity 440ms var(--ease), transform 480ms var(--ease);
   }
 }

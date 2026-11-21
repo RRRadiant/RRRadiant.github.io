@@ -5,54 +5,193 @@
     return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   };
 
-  /* 0. Homepage opening image: full-viewport sticky stage + smooth scroll transition into main content */
+  /* 0. Homepage opening image: mobile lockscreen swipe-up curtain transition to main content */
   const opening = document.getElementById('nw-open');
   const mainContent = document.getElementById('main-content');
   if (opening && mainContent) {
-    let mainRevealed = false;
+    let isUnlocked = false;
+    let isAnimating = false;
+    let animTimer = null;
+    let revealTimer = null;
 
-    const revealHomeMain = function () {
-      if (mainRevealed) return;
-      mainRevealed = true;
+    const triggerReveal = function () {
+      if (revealTimer) clearTimeout(revealTimer);
       document.body.classList.remove('nw-reveal-pending');
       document.body.classList.add('nw-reveal-active');
-      setTimeout(function () {
+      revealTimer = setTimeout(function () {
         document.body.classList.remove('nw-reveal-active');
-      }, 720);
+      }, 950);
     };
 
-    if (!prefersReducedMotion() && window.scrollY < window.innerHeight * 0.25 && !window.location.hash) {
+    const unlockOpen = function () {
+      if (isUnlocked || isAnimating) return;
+      isUnlocked = true;
+      isAnimating = true;
+      document.body.classList.remove('is-dragging-open');
+      document.body.style.removeProperty('--nw-curtain-y');
+      document.body.style.removeProperty('--nw-curtain-opacity');
+      document.body.classList.add('is-unlocked', 'is-past-open');
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      triggerReveal();
+      if (animTimer) clearTimeout(animTimer);
+      animTimer = setTimeout(function () {
+        isAnimating = false;
+      }, 680);
+    };
+
+    const lockOpen = function () {
+      if (!isUnlocked || isAnimating) return;
+      isUnlocked = false;
+      isAnimating = true;
+      if (revealTimer) clearTimeout(revealTimer);
+      document.body.classList.remove('is-dragging-open', 'is-unlocked', 'is-past-open', 'nw-reveal-active');
       document.body.classList.add('nw-reveal-pending');
+      document.body.style.removeProperty('--nw-curtain-y');
+      document.body.style.removeProperty('--nw-curtain-opacity');
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      if (animTimer) clearTimeout(animTimer);
+      animTimer = setTimeout(function () {
+        isAnimating = false;
+      }, 680);
+    };
+
+    document.body.classList.add('nw-curtain-mode');
+
+    if (window.location.hash || window.scrollY > 36) {
+      isUnlocked = true;
+      document.body.classList.add('is-unlocked', 'is-past-open');
     } else {
-      mainRevealed = true;
+      document.body.classList.add('nw-reveal-pending');
     }
 
-    const syncOpenProgress = function () {
-      const vh = Math.max(1, window.innerHeight || 800);
-      const y = Math.max(0, window.scrollY || window.pageYOffset || 0);
-      const progress = Math.min(1, Math.max(0, y / (vh * 0.85)));
+    /* Wheel: scroll down anywhere on cover sweeps it up cleanly; scroll up at top brings it back */
+    window.addEventListener(
+      'wheel',
+      function (event) {
+        if (isAnimating) {
+          event.preventDefault();
+          return;
+        }
+        if (!isUnlocked) {
+          if (event.deltaY > 6) {
+            event.preventDefault();
+            unlockOpen();
+          }
+        } else if (window.scrollY <= 2 && event.deltaY < -24) {
+          event.preventDefault();
+          lockOpen();
+        }
+      },
+      { passive: false }
+    );
 
-      document.body.style.setProperty('--nw-open-progress', progress.toFixed(4));
-      document.body.classList.toggle('is-past-open', y >= vh - 72);
+    /* Touch: interactive 1:1 swipe up to unlock, and pull down at page top to bring cover back */
+    let touchStartY = null;
+    let touchDeltaY = 0;
 
-      if (!mainRevealed && y >= vh * 0.14) {
-        revealHomeMain();
+    opening.addEventListener(
+      'touchstart',
+      function (event) {
+        if (isUnlocked || isAnimating || event.touches.length !== 1) return;
+        touchStartY = event.touches[0].clientY;
+        touchDeltaY = 0;
+        document.body.classList.add('is-dragging-open');
+      },
+      { passive: true }
+    );
+
+    opening.addEventListener(
+      'touchmove',
+      function (event) {
+        if (touchStartY === null || isUnlocked) return;
+        touchDeltaY = event.touches[0].clientY - touchStartY;
+        if (touchDeltaY < 0) {
+          event.preventDefault();
+          const vh = Math.max(1, window.innerHeight || 800);
+          const ratio = Math.min(1, Math.abs(touchDeltaY) / (vh * 0.75));
+          document.body.style.setProperty('--nw-curtain-y', Math.round(touchDeltaY) + 'px');
+          document.body.style.setProperty('--nw-curtain-opacity', (1 - ratio * 0.35).toFixed(3));
+        } else {
+          document.body.style.setProperty('--nw-curtain-y', '0px');
+          document.body.style.setProperty('--nw-curtain-opacity', '1');
+        }
+      },
+      { passive: false }
+    );
+
+    const finishTouch = function () {
+      if (touchStartY === null) return;
+      const delta = touchDeltaY;
+      touchStartY = null;
+      touchDeltaY = 0;
+      document.body.classList.remove('is-dragging-open');
+      if (delta < -56) {
+        unlockOpen();
+      } else {
+        document.body.style.removeProperty('--nw-curtain-y');
+        document.body.style.removeProperty('--nw-curtain-opacity');
       }
     };
 
-    syncOpenProgress();
-    window.addEventListener('scroll', syncOpenProgress, { passive: true });
-    window.addEventListener('resize', syncOpenProgress);
+    opening.addEventListener('touchend', finishTouch, { passive: true });
+    opening.addEventListener('touchcancel', finishTouch, { passive: true });
+
+    let pullStartY = null;
+    let pullDeltaY = 0;
+    window.addEventListener(
+      'touchstart',
+      function (event) {
+        if (!isUnlocked || isAnimating || window.scrollY > 2 || event.touches.length !== 1) {
+          pullStartY = null;
+          return;
+        }
+        pullStartY = event.touches[0].clientY;
+        pullDeltaY = 0;
+      },
+      { passive: true }
+    );
+    window.addEventListener(
+      'touchmove',
+      function (event) {
+        if (pullStartY === null || !isUnlocked) return;
+        if (window.scrollY > 2) {
+          pullStartY = null;
+          return;
+        }
+        pullDeltaY = event.touches[0].clientY - pullStartY;
+      },
+      { passive: true }
+    );
+    window.addEventListener(
+      'touchend',
+      function () {
+        if (pullStartY === null) return;
+        const delta = pullDeltaY;
+        pullStartY = null;
+        pullDeltaY = 0;
+        if (delta > 72 && window.scrollY <= 2) {
+          lockOpen();
+        }
+      },
+      { passive: true }
+    );
+
+    /* Keyboard: Space / ArrowDown / PageDown sweeps cover up */
+    window.addEventListener('keydown', function (event) {
+      if (isUnlocked || isAnimating) return;
+      const tag = event.target && event.target.tagName ? event.target.tagName.toLowerCase() : '';
+      if (tag === 'input' || tag === 'textarea' || (event.target && event.target.isContentEditable)) return;
+      if (event.key === 'ArrowDown' || event.key === 'PageDown' || event.key === ' ') {
+        event.preventDefault();
+        unlockOpen();
+      }
+    });
 
     const scrollBtn = document.getElementById('nw-open-scroll');
     if (scrollBtn) {
       scrollBtn.addEventListener('click', function (event) {
         event.preventDefault();
-        revealHomeMain();
-        mainContent.scrollIntoView({
-          behavior: prefersReducedMotion() ? 'auto' : 'smooth',
-          block: 'start'
-        });
+        unlockOpen();
       });
     }
   }
