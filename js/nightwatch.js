@@ -5,193 +5,64 @@
     return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   };
 
-  /* 0. Homepage opening image: mobile-style swipe-up unlock curtain & main-UI arrival transition */
+  /* 0. Homepage opening image: continuous scroll-linked mobile lockscreen swipe-up transition */
   const opening = document.getElementById('nw-open');
   const mainContent = document.getElementById('main-content');
   if (opening && mainContent) {
-    let isUnlocked = false;
-    let isAnimating = false;
-    let revealTimer = null;
-    let animTimer = null;
-    let dragStartY = null;
-    let dragDeltaY = 0;
+    let snapTimer = null;
+    let isAutoSnapping = false;
 
-    const triggerMainReveal = function () {
-      if (revealTimer) clearTimeout(revealTimer);
-      document.body.classList.remove('nw-reveal-pending');
-      document.body.classList.add('nw-reveal-active');
-      /* Clear transition class after settle so card hover transitions remain crisp */
-      revealTimer = setTimeout(function () {
-        document.body.classList.remove('nw-reveal-active');
-      }, 720);
+    const syncOpenProgress = function () {
+      const vh = Math.max(1, window.innerHeight || 800);
+      const y = Math.max(0, window.scrollY || window.pageYOffset || 0);
+      const progress = Math.min(1, Math.max(0, y / (vh * 0.85)));
+      const done = y >= vh - 60 ? 1 : 0;
+
+      document.body.style.setProperty('--nw-open-progress', progress.toFixed(4));
+      document.body.style.setProperty('--nw-open-done', String(done));
+      document.body.classList.toggle('is-past-open', y >= vh * 0.68);
     };
 
-    const unlockOpen = function () {
-      if (isUnlocked || isAnimating) return;
-      isUnlocked = true;
-      isAnimating = true;
-      document.body.classList.remove('is-dragging-open');
-      document.body.style.removeProperty('--nw-unlock-y');
-      document.body.classList.add('is-unlocked', 'is-past-open');
-      window.scrollTo({ top: 0, behavior: 'auto' });
-      triggerMainReveal();
-      if (animTimer) clearTimeout(animTimer);
-      animTimer = setTimeout(function () {
-        isAnimating = false;
-      }, 520);
-    };
+    syncOpenProgress();
+    window.addEventListener('scroll', syncOpenProgress, { passive: true });
+    window.addEventListener('resize', syncOpenProgress);
 
-    const lockOpen = function () {
-      if (!isUnlocked || isAnimating) return;
-      isUnlocked = false;
-      isAnimating = true;
-      if (revealTimer) clearTimeout(revealTimer);
-      document.body.classList.remove('is-dragging-open', 'is-unlocked', 'is-past-open', 'nw-reveal-active');
-      document.body.classList.add('nw-reveal-pending');
-      document.body.style.removeProperty('--nw-unlock-y');
-      window.scrollTo({ top: 0, behavior: 'auto' });
-      if (animTimer) clearTimeout(animTimer);
-      animTimer = setTimeout(function () {
-        isAnimating = false;
-      }, 520);
-    };
-
+    /* Magnetic lockscreen snap when the user stops scrolling part-way in the opening zone */
     if (!prefersReducedMotion()) {
-      document.body.classList.add('nw-lockscreen-ready');
-
-      if (window.location.hash || window.scrollY > 36) {
-        isUnlocked = true;
-        document.body.classList.add('is-unlocked', 'is-past-open');
-      } else {
-        document.body.classList.add('nw-reveal-pending');
-      }
-
-      /* Wheel: scroll down on lockscreen slides cover up; scroll up at top pulls cover back down */
       window.addEventListener(
-        'wheel',
-        function (event) {
-          if (isAnimating) {
-            event.preventDefault();
-            return;
-          }
-          if (!isUnlocked) {
-            if (event.deltaY > 8) {
-              event.preventDefault();
-              unlockOpen();
-            }
-          } else if (window.scrollY <= 2 && event.deltaY < -28) {
-            event.preventDefault();
-            lockOpen();
-          }
-        },
-        { passive: false }
-      );
-
-      /* Touch: interactive 1:1 upward drag on the lockscreen cover, and downward pull at top to relock */
-      let pullDownStartY = null;
-      let pullDownDeltaY = 0;
-
-      opening.addEventListener(
-        'touchstart',
-        function (event) {
-          if (isUnlocked || isAnimating || event.touches.length !== 1) return;
-          dragStartY = event.touches[0].clientY;
-          dragDeltaY = 0;
-          document.body.classList.add('is-dragging-open');
-        },
-        { passive: true }
-      );
-
-      opening.addEventListener(
-        'touchmove',
-        function (event) {
-          if (dragStartY === null || isUnlocked) return;
-          const currentY = event.touches[0].clientY;
-          dragDeltaY = currentY - dragStartY;
-          if (dragDeltaY < 0) {
-            event.preventDefault();
-            document.body.style.setProperty('--nw-unlock-y', Math.round(dragDeltaY) + 'px');
-          } else {
-            document.body.style.setProperty('--nw-unlock-y', '0px');
-          }
-        },
-        { passive: false }
-      );
-
-      const finishTouchDrag = function () {
-        if (dragStartY === null) return;
-        const delta = dragDeltaY;
-        dragStartY = null;
-        dragDeltaY = 0;
-        document.body.classList.remove('is-dragging-open');
-        if (delta < -56) {
-          unlockOpen();
-        } else {
-          document.body.style.removeProperty('--nw-unlock-y');
-        }
-      };
-
-      opening.addEventListener('touchend', finishTouchDrag, { passive: true });
-      opening.addEventListener('touchcancel', finishTouchDrag, { passive: true });
-
-      window.addEventListener(
-        'touchstart',
-        function (event) {
-          if (!isUnlocked || isAnimating || window.scrollY > 2 || event.touches.length !== 1) {
-            pullDownStartY = null;
-            return;
-          }
-          pullDownStartY = event.touches[0].clientY;
-          pullDownDeltaY = 0;
-        },
-        { passive: true }
-      );
-
-      window.addEventListener(
-        'touchmove',
-        function (event) {
-          if (pullDownStartY === null || !isUnlocked) return;
-          if (window.scrollY > 2) {
-            pullDownStartY = null;
-            return;
-          }
-          pullDownDeltaY = event.touches[0].clientY - pullDownStartY;
-        },
-        { passive: true }
-      );
-
-      window.addEventListener(
-        'touchend',
+        'scroll',
         function () {
-          if (pullDownStartY === null) return;
-          const delta = pullDownDeltaY;
-          pullDownStartY = null;
-          pullDownDeltaY = 0;
-          if (delta > 72 && window.scrollY <= 2) {
-            lockOpen();
-          }
+          if (isAutoSnapping) return;
+          if (snapTimer) clearTimeout(snapTimer);
+          const vh = Math.max(1, window.innerHeight || 800);
+          const y = window.scrollY || 0;
+          if (y <= 4 || y >= vh - 32) return;
+
+          snapTimer = setTimeout(function () {
+            const curY = window.scrollY || 0;
+            if (curY <= 4 || curY >= vh - 32) return;
+            isAutoSnapping = true;
+            const targetY = curY >= vh * 0.22 ? Math.max(0, vh - 28) : 0;
+            window.scrollTo({ top: targetY, behavior: 'smooth' });
+            setTimeout(function () {
+              isAutoSnapping = false;
+            }, 480);
+          }, 150);
         },
         { passive: true }
       );
+    }
 
-      /* Keyboard: Space / Down / PageDown unlocks the cover screen */
-      window.addEventListener('keydown', function (event) {
-        if (isUnlocked || isAnimating) return;
-        const tag = event.target && event.target.tagName ? event.target.tagName.toLowerCase() : '';
-        if (tag === 'input' || tag === 'textarea' || (event.target && event.target.isContentEditable)) return;
-        if (event.key === 'ArrowDown' || event.key === 'PageDown' || event.key === ' ') {
-          event.preventDefault();
-          unlockOpen();
-        }
-      });
-
-      const scrollBtn = document.getElementById('nw-open-scroll');
-      if (scrollBtn) {
-        scrollBtn.addEventListener('click', function (event) {
-          event.preventDefault();
-          unlockOpen();
+    const scrollBtn = document.getElementById('nw-open-scroll');
+    if (scrollBtn) {
+      scrollBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        const vh = Math.max(1, window.innerHeight || 800);
+        window.scrollTo({
+          top: Math.max(0, vh - 28),
+          behavior: prefersReducedMotion() ? 'auto' : 'smooth'
         });
-      }
+      });
     }
   }
 

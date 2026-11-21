@@ -1990,7 +1990,7 @@ body.nw-is-leaving .nw-main {
 
 
 /* ============================================================
-   Homepage opening image (lockscreen swipe-up transition to main UI)
+   Homepage opening image (scroll-linked mobile lockscreen swipe-up transition)
    ============================================================ */
 .nw-open {
   position: relative;
@@ -2005,6 +2005,13 @@ body.nw-is-leaving .nw-main {
   background-color: var(--bg-page);
   overflow: hidden;
   isolation: isolate;
+  z-index: 1;
+}
+
+/* Sticky lockscreen stage: stays pinned while main content slides up over it, or fades/blurs as you swipe */
+body.nw-home .nw-open {
+  position: sticky;
+  top: 0;
 }
 
 .nw-open-photo {
@@ -2017,6 +2024,9 @@ body.nw-is-leaving .nw-main {
   object-position: center;
   z-index: 0;
   pointer-events: none;
+  will-change: transform, filter;
+  transform: scale(calc(1 + var(--nw-open-progress, 0) * 0.08)) translate3d(0, calc(var(--nw-open-progress, 0) * -28px), 0);
+  filter: blur(calc(var(--nw-open-progress, 0) * 14px)) brightness(calc(1 - var(--nw-open-progress, 0) * 0.45));
   animation: nw-open-photo-in var(--dur-open) var(--ease) backwards;
 }
 
@@ -2028,9 +2038,9 @@ body.nw-is-leaving .nw-main {
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgba(22, 21, 19, 0.18) 0%,
-    rgba(22, 21, 19, 0.28) 42%,
-    rgba(22, 21, 19, 0.7) 82%,
+    rgba(22, 21, 19, 0.22) 0%,
+    rgba(22, 21, 19, 0.28) 46%,
+    rgba(22, 21, 19, 0.72) 84%,
     var(--bg-page) 100%
   );
 }
@@ -2041,7 +2051,9 @@ body.nw-is-leaving .nw-main {
   text-align: center;
   padding: 0 24px;
   max-width: 840px;
-  transition: opacity 280ms var(--ease), transform 280ms var(--ease);
+  will-change: transform, opacity;
+  opacity: clamp(0, calc(1 - var(--nw-open-progress, 0) * 1.45), 1);
+  transform: translate3d(0, calc(var(--nw-open-progress, 0) * -72px), 0) scale(calc(1 - var(--nw-open-progress, 0) * 0.08));
 }
 
 .nw-open-title {
@@ -2069,8 +2081,9 @@ body.nw-is-leaving .nw-main {
   position: absolute;
   z-index: 2;
   left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%);
+  bottom: 28px;
+  transform: translate3d(-50%, calc(var(--nw-open-progress, 0) * -36px), 0);
+  opacity: clamp(0, calc(1 - var(--nw-open-progress, 0) * 2.4), 1);
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -2079,16 +2092,16 @@ body.nw-is-leaving .nw-main {
   font-size: 13px;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
   animation: nw-rise-in var(--dur-enter) var(--ease) 120ms backwards;
-  transition: opacity 220ms var(--ease), color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  transition: color var(--dur-fast) var(--ease);
 }
 
-/* Mobile lockscreen grab handle indicator at the bottom of the cover */
+/* Mobile lockscreen grab handle bar */
 .nw-open-scroll::after {
   content: "";
   width: 44px;
   height: 4px;
   border-radius: 4px;
-  background-color: rgba(239, 233, 222, 0.42);
+  background-color: rgba(239, 233, 222, 0.45);
   transition: background-color var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
 }
 
@@ -2098,132 +2111,94 @@ body.nw-is-leaving .nw-main {
 
 .nw-open-scroll:hover::after {
   background-color: var(--accent);
-  transform: scaleX(1.08);
+  transform: scaleX(1.1);
 }
 
 .nw-open-scroll .nw-icon {
   color: currentColor;
 }
 
-/* Active lockscreen curtain mode (fixed full-viewport cover sliding up over main UI) */
-body.nw-home.nw-lockscreen-ready .nw-open {
-  position: fixed;
-  inset: 0;
-  z-index: 35;
-  height: 100vh;
-  height: 100dvh;
-  border-bottom: 1px solid rgba(239, 233, 222, 0.12);
-  will-change: transform, opacity;
-  transform: translate3d(0, var(--nw-unlock-y, 0px), 0);
-  transition: transform 500ms var(--ease), opacity 420ms var(--ease);
+/* Main UI deck slides up over the sticky lockscreen image like a phone home screen sheet */
+body.nw-home .nw-main {
+  position: relative;
+  z-index: 10;
+  max-width: none;
+  width: 100%;
+  margin-top: -28px;
+  padding: 44px max(24px, calc((100% - var(--shell-max)) / 2 + 24px)) 64px;
+  background-color: var(--bg-page);
+  border-top: 1px solid rgba(239, 233, 222, 0.12);
+  border-radius: calc((1 - var(--nw-open-done, 0)) * 24px) calc((1 - var(--nw-open-done, 0)) * 24px) 0 0;
+  box-shadow: 0 -24px 64px rgba(0, 0, 0, 0.68);
+  scroll-margin-top: 56px;
+  transition: border-radius 260ms var(--ease);
 }
 
-body.nw-home.nw-lockscreen-ready.is-dragging-open .nw-open {
-  transition: none;
-}
-
-body.nw-home.nw-lockscreen-ready:not(.is-unlocked) {
-  overflow: hidden;
-  touch-action: none;
-}
-
-body.nw-home.nw-lockscreen-ready .nw-main {
-  padding-top: calc(var(--topbar-h) + 32px);
-}
-
-/* Lockscreen slid up & unlocked */
-body.nw-home.nw-lockscreen-ready.is-unlocked .nw-open {
-  transform: translate3d(0, -104%, 0);
-  opacity: 0;
+/* Top pull-handle indicator inside the sliding main sheet */
+body.nw-home .nw-main::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  border-radius: 4px;
+  background-color: rgba(239, 233, 222, 0.16);
+  opacity: calc(1 - var(--nw-open-done, 0));
+  transition: opacity 220ms var(--ease);
   pointer-events: none;
 }
 
-body.nw-home.nw-lockscreen-ready.is-unlocked .nw-open-inner {
-  opacity: 0;
-  transform: translate3d(0, -28px, 0) scale(0.97);
+body.nw-home .nw-footer {
+  position: relative;
+  z-index: 10;
 }
 
-body.nw-home.nw-lockscreen-ready.is-unlocked .nw-open-scroll {
-  opacity: 0;
-}
-
-body.nw-home.is-past-open .nw-open-inner {
-  opacity: 0.35;
-  transform: translateY(-10px);
-}
-
-body.nw-home.is-past-open .nw-open-scroll {
-  opacity: 0;
-}
-
+/* Topbar legibility over bright sky in hero photo */
 body.nw-home .nw-topbar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   width: 100%;
-  background-color: transparent;
+  background: linear-gradient(180deg, rgba(14, 13, 12, 0.62) 0%, rgba(14, 13, 12, 0) 100%);
   backdrop-filter: none;
   border-bottom-color: transparent;
-  transition: background-color var(--dur-medium) var(--ease), border-color var(--dur-medium) var(--ease);
+  transition: background-color var(--dur-medium) var(--ease), border-color var(--dur-medium) var(--ease), background var(--dur-medium) var(--ease);
 }
 
-body.nw-home.is-past-open .nw-topbar,
-body.nw-home.is-unlocked .nw-topbar {
+body.nw-home:not(.is-past-open) .nw-brand,
+body.nw-home:not(.is-past-open) .nw-nav-link {
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+}
+
+body.nw-home:not(.is-past-open) .nw-nav-link:hover,
+body.nw-home:not(.is-past-open) .nw-nav-link.is-active {
+  color: #ffffff;
+  background-color: rgba(18, 17, 15, 0.55);
+  backdrop-filter: blur(8px);
+}
+
+body.nw-home.is-past-open .nw-topbar {
+  background: rgba(18, 17, 15, 0.92);
   background-color: rgba(18, 17, 15, 0.92);
   backdrop-filter: blur(10px);
   border-bottom-color: var(--border);
 }
 
-body.nw-home .nw-main {
-  scroll-margin-top: 80px;
-}
-
-/* Homepage main-UI arrival transition (lockscreen spring-in from scaled depth) */
-body.nw-home.nw-reveal-pending .nw-hero,
-body.nw-home.nw-reveal-pending .nw-stream-bar,
-body.nw-home.nw-reveal-pending .nw-sidebar-sticky,
-body.nw-home.nw-reveal-pending .nw-post-list .nw-post-card:nth-child(-n+4) {
-  opacity: 0;
-  transform: translate3d(0, 16px, 0) scale(0.98);
-}
-
-body.nw-home.nw-reveal-active .nw-hero,
-body.nw-home.nw-reveal-active .nw-stream-bar,
-body.nw-home.nw-reveal-active .nw-sidebar-sticky,
-body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(-n+4) {
-  opacity: 1;
-  transform: none;
-  transition: opacity 460ms var(--ease), transform 460ms var(--ease);
-}
-
-body.nw-home.nw-reveal-active .nw-sidebar-sticky {
-  transition-delay: 45ms;
-}
-
-body.nw-home.nw-reveal-active .nw-stream-bar {
-  transition-delay: 60ms;
-}
-
-body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(1) {
-  transition-delay: 90ms;
-}
-
-body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(2) {
-  transition-delay: 135ms;
-}
-
-body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(3) {
-  transition-delay: 180ms;
-}
-
-body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(4) {
-  transition-delay: 225ms;
+/* Scroll-driven spring-in for the main UI cards as the sheet slides up */
+body.nw-home .nw-shell {
+  will-change: transform, opacity;
+  opacity: clamp(0.25, calc(0.25 + var(--nw-open-progress, 0) * 0.95), 1);
+  transform: translate3d(0, calc((1 - var(--nw-open-progress, 1)) * 28px), 0) scale(calc(0.975 + var(--nw-open-progress, 1) * 0.025));
+  transform-origin: top center;
 }
 
 @media (max-width: 860px) {
-  body.nw-home.nw-lockscreen-ready .nw-main {
-    padding-top: calc(var(--topbar-h) + 20px);
+  body.nw-home .nw-main {
+    padding: 36px 16px 48px;
   }
 }
 
@@ -2240,12 +2215,17 @@ body.nw-home.nw-reveal-active .nw-post-list .nw-post-card:nth-child(4) {
     transition-delay: 0ms !important;
   }
 
-  body.nw-home.nw-reveal-pending .nw-hero,
-  body.nw-home.nw-reveal-pending .nw-stream-bar,
-  body.nw-home.nw-reveal-pending .nw-sidebar-sticky,
-  body.nw-home.nw-reveal-pending .nw-post-list .nw-post-card:nth-child(-n+4),
+  body.nw-home .nw-open {
+    position: relative;
+  }
+
+  body.nw-home .nw-open-photo,
+  body.nw-home .nw-open-inner,
+  body.nw-home .nw-open-scroll,
+  body.nw-home .nw-shell,
   body.nw-is-leaving .nw-main {
     opacity: 1 !important;
     transform: none !important;
+    filter: none !important;
   }
 }
